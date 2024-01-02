@@ -1,5 +1,6 @@
 from flask import Flask, request, render_template, redirect, flash, session
 import requests
+from secret import API_KEY
 
 app = Flask(__name__)
 app.app_context().push()
@@ -7,11 +8,15 @@ app.config['SECRET_KEY'] = "never-tell!"
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 
 
-
+#alphavantage
 BASE_URL='https://www.alphavantage.co/query?'
-API_KEY='SE5ZHEU9MXJIPVZM'
+# API_KEY='SE5ZHEU9MXJIPVZM'
 function='GLOBAL_QUOTE'
-symbol='AAPL'
+# symbol='AAPL'
+
+# #StockData
+# BASE_URL='https://api.stockdata.org/v1/'
+# API_TOKEN='Zrm3ez7JBHiM7mfGmuJlccTh8FCDQLljyD1QYI43'
 
 
 @app.route('/')
@@ -19,20 +24,37 @@ def enter_ticker():
     return render_template('input_ticker.html')
 
 @app.route('/data',methods=['GET','POST'])
-def get_quote():
+def equities():
     ticker = request.form['ticker']
 
-    stock_data = call_api(ticker)
-    print(f"{stock_data}")
-    return f"{stock_data}"
+    quote_data = get_quotes(ticker)
+
+    news=get_news(ticker)
+
+    return render_template('quote.html',quote=quote_data,news=news)
 
 
-def call_api(ticker):
-    url=f"{BASE_URL}function={function}&symbol={ticker}&apikey={API_KEY}"
+def get_quotes(ticker):
+    url=f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={ticker}&apikey={API_KEY}"
+
     r = requests.get(url)
-    data = r.json()
-    global_quote = data["Global Quote"]
-    return global_quote
+    data= r.json()
+
+
+
+
+
+    return data
+
+def get_news(ticker):
+    url=f"https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers={ticker}&apikey={API_KEY}"
+
+
+    r = requests.get(url)
+    headlines = r.json()
+
+    return headlines
+# https://api.stockdata.org/v1/news/all?symbols=TSLA,AMZN,MSFT&filter_entities=true&language=en&api_token=Zrm3ez7JBHiM7mfGmuJlccTh8FCDQLljyD1QYI43
 
 
     # # Access specific elements
