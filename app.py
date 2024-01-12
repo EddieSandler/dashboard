@@ -1,11 +1,12 @@
 import yahooquery as yq
-import pandas as pd
+
 from fredapi import Fred
 import requests
 import openai
 from openai import OpenAI
 from urllib.parse import quote
-from flask import Flask, request, render_template, redirect, flash, session
+from flask_cors import CORS
+from flask import Flask, request, render_template, jsonify,redirect, flash, session
 from secret import OPENAI_API_KEY,FRED_API_KEY,JOKE_API_KEY,WEATHER_API_KEY
 
 import datetime
@@ -20,6 +21,7 @@ client = OpenAI()
 
 
 app = Flask(__name__)
+CORS(app)
 app.config['SECRET_KEY'] = "never-tell!"
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 
@@ -39,11 +41,11 @@ def get_market_summary():
     #         print(item['shortName'],item['regularMarketPrice']['fmt'],item['regularMarketChangePercent']['fmt'])
     return render_template('market_summary.html',data=data)
 
-@app.route('/quote',methods=['GET','POST'])
-def get_quote():
-    symbol = request.form['ticker'].upper()
-    quote = yq.Ticker(symbol)
-    data=quote.quotes[symbol]
+# @app.route('/quote',methods=['GET','POST'])
+# def get_quote():
+#     symbol = request.form['ticker'].upper()
+#     quote = yq.Ticker(symbol)
+#     data=quote.quotes[symbol]
     # name=quote.quotes[symbol]['shortName']
     # price = quote.quotes[symbol]['regularMarketPrice']
     # change = quote.quotes[symbol]['regularMarketChangePercent']
@@ -54,8 +56,8 @@ def get_quote():
     # ask=quote.quotes[symbol]['ask']
     # bid_size=quote.quotes[symbol]['bidSize']
     # ask_size=quote.quotes[symbol]['askSize']
-    company_news=get_company_news(symbol)
-    return render_template('quote.html',data=data,news=company_news,symbol=symbol)
+    # company_news=get_company_news(symbol)
+    # return render_template('quote.html',data=data,news=company_news,symbol=symbol)
 
 @app.route('/economic_data')
 def show_economic_data():
@@ -166,6 +168,11 @@ def get_weather():
 
     return render_template('weather.html',temp=current_temp)
 
+@app.route('/quote/<symbol>')
+def get_quote(symbol):
+    quote = yq.Ticker(symbol)
+    data = quote.quotes[symbol]
+    return jsonify(data)  # Convert to JSON response
 
 
 
@@ -173,8 +180,7 @@ def get_weather():
 
 
 
-
-# from flask import Flask, request, render_template, redirect, flash, session
+# from flask import Flask, request, render_template, redirecYour application running on port 5000 is available. Set, flash, session
 # import requests
 # from secret import API_KEY
 
