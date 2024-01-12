@@ -5,6 +5,7 @@ const watchlist =[]
 function getQuote() {
 let user_input = document.getElementById('ticker')
 const ticker =user_input.value.toUpperCase()
+
   let quoteUrl = 'http://127.0.0.1:5000/quote/' + ticker;
      axios.get(quoteUrl)
     .then(response => {
@@ -12,16 +13,13 @@ const ticker =user_input.value.toUpperCase()
       let name=response.data.shortName
       let change=response.data.regularMarketChange
       let quoteTable= document.getElementById('quote-Table')
+      quoteTable.innerHTML = '';
       const newRow = quoteTable.insertRow()
       const cell = newRow.insertCell();
       cell.textContent = ticker + '  '+ name + '  '+ price + '  '+change
       let addButton = document.createElement('button');
       addButton.textContent = 'Add to Watchlist';
       cell.append(addButton)
-     
-
-
-
       user_input.value=''
 
 
