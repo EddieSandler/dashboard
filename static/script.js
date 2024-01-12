@@ -11,8 +11,14 @@ const ticker =user_input.value.toUpperCase()
       let price=response.data.regularMarketPrice;
       let name=response.data.shortName
       let change=response.data.regularMarketChange
-      let container= document.getElementById('quote-container')
-      container.innerHTML= `<span>${ticker} + '  '+ ${name} + '  '+ ${price} + '  '+ ${change}</span>`
+      let quoteTable= document.getElementById('quote-Table')
+      const newRow = quoteTable.insertRow()
+      const cell = newRow.insertCell();
+      cell.textContent = ticker + '  '+ name + '  '+ price + '  '+change
+      let addButton = document.createElement('button');
+      addButton.textContent = 'Add to Watchlist';
+      cell.append(addButton)
+     
 
 
 
@@ -50,8 +56,6 @@ function addToWatchlist(){
       let price=response.data.regularMarketPrice;
       let name=response.data.shortName
       let change=response.data.regularMarketChange
-      let container= document.getElementById('watchlist')
-
 
       let watchlistTable =document.getElementById('watchList-Table')
       const newRow = watchlistTable.insertRow()
