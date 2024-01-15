@@ -1,4 +1,5 @@
 //capture user input
+let url = 'http://127.0.0.1:5000/quote/'
 
 
 
@@ -6,8 +7,8 @@ function getQuote() {
 let user_input = document.getElementById('ticker')
 const ticker =user_input.value.toUpperCase()
 
-  let quoteUrl = 'http://127.0.0.1:5000/quote/' + ticker;
-     axios.get(quoteUrl)
+
+     axios.get(url+ticker)
     .then(response => {
       let price=response.data.regularMarketPrice;
       let name=response.data.shortName
@@ -56,23 +57,28 @@ function addToWatchlist() {
   watchlist.push(ticker);
   localStorage.setItem('watchlist', JSON.stringify(watchlist));
   console.log('Updated watchlist', watchlist);
-
-  // Making multiple asynchronous requests
-  Promise.all(watchlist.map(ticker => axios.get('http://127.0.0.1:5000/quote/' + ticker)))
-      .then(responses => {
-          responses.forEach(response => {
-              let price = response.data.regularMarketPrice;
-              let name = response.data.shortName;
-              let change = response.data.regularMarketChange;
-              // Process or display this data as needed
-              console.log(name,price,change)
-          });
-      })
-      .catch(error => {
-          // Handle errors here
-          console.error('Error fetching data:', error);
-      });
+  updateWatchlist(watchlist)
 }
+
+// function updateWatchlist(watchlist){
+//   // JSON.parse(localStorage.getItem('watchlist')) || []
+//   // Making multiple asynchronous requests
+//   Promise.all(watchlist.map(ticker => axios.get('http://127.0.0.1:5000/quote/' + ticker)))
+//       .then(responses => {
+//           responses.forEach(response => {
+//               let price = response.data.regularMarketPrice;
+//               let name = response.data.shortName;
+//               let change = response.data.regularMarketChange;
+//               // Process or display this data as needed
+//               console.log(name,price,change)
+//           });
+//       })
+//       .catch(error => {
+//           // Handle errors here
+//           console.error('Error fetching data:', error);
+//       });
+//     }
+
 
 
 // watchlistTable =document.getElementById('portfolio')
@@ -114,21 +120,63 @@ document.addEventListener('DOMContentLoaded', (event) => {
 function updateWatchlist(watchlist) {
   watchlist.forEach(ticker => {
 
-    const quoteUrl = `http://127.0.0.1:5000/quote/${ticker}`;
+    const url = `http://127.0.0.1:5000/quote/${ticker}`;
 
-    axios.get(quoteUrl)
+    axios.get(url)
       .then(response => {
-        // Handle the successful response here
 
-        console.log(`Quote for ${ticker}:`, response.data.regularMarketPrice);
+        let price = response.data.regularMarketPrice;
+        let name = response.data.shortName;
+        let change = response.data.regularMarketChange;
+
+
+
+        console.log(`Quote for ${ticker}:`, price , change , name);
+        return displayWatchlist(ticker,price,change,name)
+
         // You can also call a function to update the UI with this quote
       })
+
       .catch(error => {
         // Handle errors here
         console.error(`Error fetching quote for ${ticker}:`, error);
       });
-  });
+  } );
+
+
 }
+
+function displayWatchlist(ticker, price, change, name) {
+  let portfolioTable = document.getElementById('portfolio-Table');
+
+  // Create a new row
+  let row = document.createElement('tr');
+
+  // Create and append the ticker cell
+  let tickerCell = document.createElement('td');
+  tickerCell.textContent = ticker;
+  row.appendChild(tickerCell);
+
+  // Create and append the price cell
+  let priceCell = document.createElement('td');
+  priceCell.textContent = price;
+  row.appendChild(priceCell);
+
+  // Create and append the change cell
+  let changeCell = document.createElement('td');
+  changeCell.textContent = change;
+  row.appendChild(changeCell);
+
+  // Create and append the name cell
+  let nameCell = document.createElement('td');
+  nameCell.textContent = name;
+  row.appendChild(nameCell);
+
+  // Append the row to the table
+  portfolioTable.appendChild(row);
+}
+
+
 
 
 
