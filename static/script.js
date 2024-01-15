@@ -42,43 +42,62 @@ document.addEventListener('DOMContentLoaded', (event) => {
 });
 
 
-function addToWatchlist(){
-  let watchlist = JSON.parse(localStorage.getItem('watchlist')) || []
-  const user_input = document.getElementById('ticker')
-  const ticker =user_input.value.toUpperCase()
+function addToWatchlist() {
+  let watchlist = JSON.parse(localStorage.getItem('watchlist')) || [];
+  const user_input = document.getElementById('ticker');
+  const ticker = user_input.value.toUpperCase();
 
-  if(!watchlist.includes(ticker)){
-    watchlist.push(ticker)
+  if (watchlist.includes(ticker)) {
+      console.log('Ticker already in watchlist');
+      user_input.value = '';
+      return;
   }
-    let quoteUrl = 'http://127.0.0.1:5000/quote/' + ticker;
-     axios.get(quoteUrl)
-    .then(response => {
-      let price=response.data.regularMarketPrice;
-      let name=response.data.shortName
-      let change=response.data.regularMarketChange
 
-      let watchlistTable =document.getElementById('watchList-Table')
-      const newRow = watchlistTable.insertRow()
-      const cell = newRow.insertCell();
-      cell.textContent = ticker + '  '+ name + '  '+ price + '  '+change
-      let removeButton = document.createElement('button');
-      removeButton.textContent = 'Remove';
-      cell.append(removeButton)
-      removeButton.id='remove'
+  watchlist.push(ticker);
+  localStorage.setItem('watchlist', JSON.stringify(watchlist));
+  console.log('Updated watchlist', watchlist);
 
-
-
-      user_input.value=''
-      setInterval(() => updateWatchlist(watchlist), 15000);
-
-    })
-    .catch(error => {
-      console.error('Error fetching quote:', error);
-    });
+  // Making multiple asynchronous requests
+  Promise.all(watchlist.map(ticker => axios.get('http://127.0.0.1:5000/quote/' + ticker)))
+      .then(responses => {
+          responses.forEach(response => {
+              let price = response.data.regularMarketPrice;
+              let name = response.data.shortName;
+              let change = response.data.regularMarketChange;
+              // Process or display this data as needed
+              console.log(name,price,change)
+          });
+      })
+      .catch(error => {
+          // Handle errors here
+          console.error('Error fetching data:', error);
+      });
+}
 
 
+// watchlistTable =document.getElementById('portfolio')
+      // const newRow = watchlistTable.insertRow()
+      // const cell = newRow.insertCell();
+      // cell.textContent = ticker + '  '+ name + '  '+ price + '  '+change
+      // let removeButton = document.createElement('button');
+      // removeButton.textContent = 'Remove';
+      // cell.append(removeButton)
+      // removeButton.id='remove'
 
-  }
+
+
+      // user_input.value=''
+
+
+
+    // .catch(error => {
+    //   console.error('Error fetching quote:', error);
+    //   return 1
+    // });
+
+
+
+
 
 document.addEventListener('DOMContentLoaded', (event) => {
   // Select the button by its ID
