@@ -51,3 +51,10 @@ img {
   width:50%;
   height: 100%;
 }
+
+td.quote-input {
+  min-height: 20px;  /* Set the minimum height as per your requirement */
+  height: 20px;      /* This ensures the height is at least 50px */
+  vertical-align: top; /* Keeps content aligned to the top, if any */
+  border: 1px solid #ccc; /* Optional, for visual aid to see the cells */
+}

@@ -1,105 +1,150 @@
-//capture user input
-let url = 'http://127.0.0.1:5000/quote/'
+let watchlistButtonClickListener;
+let watchlist = JSON.parse(localStorage.getItem('watchlist')) || [];
+
+//load watchlist from db
+//populate quote/change
+//display Watchlist on DOM
+//update price/change every 15 seconds while on the page
+
+//add watchlist ticker to db
+//remove watchlist ticker from db
+//error handling for blank tickers
+//advise user to enter crypto as BTC-US SOL-US etc
+//create default watchlist with equity and crypto and FX
 
 
 
-function getQuote() {
-let user_input = document.getElementById('ticker')
-const ticker =user_input.value.toUpperCase()
+async function retrieveQuote() {
+  let user_input = document.getElementById('ticker');
+  let ticker = user_input.value.toUpperCase();
+  user_input.value = '';
+  if (ticker === '') {
+    // Handle empty input (e.g., display an alert or a warning message)
+    alert('Input cannot be empty');
+    return; // Stop the function if the input is empty
+  }
+  //check api for vaid ticker
+  try {
+    let url = `http://127.0.0.1:5000/quote/${ticker}`;
+    response = await axios.get(url);
 
+    return displayQuote(response, ticker);
 
-     axios.get(url+ticker)
-    .then(response => {
-      let price=response.data.regularMarketPrice;
-      let name=response.data.shortName
-      let change=response.data.regularMarketChange
-      let quoteTable= document.getElementById('quote-Table')
-      quoteTable.innerHTML = '';
-      const newRow = quoteTable.insertRow()
-      const cell = newRow.insertCell();
-      cell.textContent = ticker + '  '+ name + '  '+ price + '  '+change
-
-      user_input.value=''
-
-
-
-    })
-    .catch(error => {
-      console.error('Error fetching quote:', error);
-    });
-
-
-}
-
-document.addEventListener('DOMContentLoaded', (event) => {
-  // Select the button by its ID
- const quoteButton = document.getElementById('quote');
- event.preventDefault()
-
-  // Add click event listener to the button
-  quoteButton.addEventListener('click', getQuote)
-
-
-});
-
-
-function addToWatchlist() {
-  let watchlist = JSON.parse(localStorage.getItem('watchlist')) || [];
-  const user_input = document.getElementById('ticker');
-  const ticker = user_input.value.toUpperCase();
-
-  if (watchlist.includes(ticker)) {
-      console.log('Ticker already in watchlist');
-      user_input.value = '';
-      return;
+  } catch {
+    alert('invalid ticker');
+    return 1;
   }
 
-  watchlist.push(ticker);
-  localStorage.setItem('watchlist', JSON.stringify(watchlist));
-  console.log('Updated watchlist', watchlist);
-  updateWatchlist(watchlist)
+};
+
+function displayQuote(response, ticker) {
+
+  const displayContainer = document.getElementById('quote-section');
+  document.getElementById('symbolField').textContent = ticker;
+  document.getElementById("priceField").textContent = response.data.regularMarketPrice;
+  document.getElementById('changeField').textContent = response.data.regularMarketChange;
+  document.getElementById('Pctchange').textContent = response.data.regularMarketChangePercent;
+  document.getElementById('nameField').textContent = response.data.shortName;
+
+  const watchlistButton = document.getElementById('add');
+  watchlistButton.removeEventListener('click', watchlistButtonClickListener);
+
+  // Attach a new click event listener
+  watchlistButtonClickListener = () => addToWatchlist(response.data, ticker);
+  watchlistButton.addEventListener('click', watchlistButtonClickListener);
+
+  function handleWatchlistButtonClick(data, ticker) {
+    // Call addToWatchlist with the correct parameters
+    watchlistButton.removeEventListener('click', handleWatchlistButtonClick);
+    addToWatchlist(data, ticker);
+  }
 }
 
-// function updateWatchlist(watchlist){
-//   // JSON.parse(localStorage.getItem('watchlist')) || []
-//   // Making multiple asynchronous requests
-//   Promise.all(watchlist.map(ticker => axios.get('http://127.0.0.1:5000/quote/' + ticker)))
-//       .then(responses => {
-//           responses.forEach(response => {
-//               let price = response.data.regularMarketPrice;
-//               let name = response.data.shortName;
-//               let change = response.data.regularMarketChange;
-//               // Process or display this data as needed
-//               console.log(name,price,change)
-//           });
-//       })
-//       .catch(error => {
-//           // Handle errors here
-//           console.error('Error fetching data:', error);
-//       });
-//     }
+
+
+function addToWatchlist(data, ticker) {
+
+  if (watchlist.includes(ticker)) {
+    alert('already in watchlist');
+    const watchlistButton = document.getElementById('add');
+    watchlistButton.removeEventListener('click', watchlistButtonClickListener);
+
+    return;
+  } else {
+    watchlist.push(ticker);
+    localStorage.setItem('watchlist', JSON.stringify(watchlist));
+
+
+    return displayQuoteInWatchlist(ticker, data);
+  }
+
+}
+
+function displayQuoteInWatchlist(ticker, data) {
+  let table = document.getElementById('watchlist-table');
+  const row = document.createElement('tr');
+  const symbolCell = document.createElement('td');
+  symbolCell.textContent = ticker;
+  row.appendChild(symbolCell);
+
+  const priceCell = document.createElement('td');
+  priceCell.textContent = data.regularMarketPrice;
+  row.appendChild(priceCell);
+
+  const changeCell = document.createElement('td');
+  changeCell.textContent = data.regularMarketChange;
+  row.appendChild(changeCell);
+
+  const PctchangeCell = document.createElement('td');
+  PctchangeCell.textContent = data.regularMarketChangePercent;
+  row.appendChild(PctchangeCell);
+
+
+  const nameCell = document.createElement('td');
+  nameCell.textContent = data.shortName;
+  row.appendChild(nameCell);
+
+  let removeButton = document.createElement('button');
+  removeButton.textContent = 'Remove';
+
+  removeButton.id = 'remove';
+  row.appendChild(removeButton);
+  removeButton.onclick = function () {
+    removeTickerFromDOMAndLocalStorage(row, ticker);
+  };
+
+  table.appendChild(row);
+  updateWatchlist(watchlist);
+
+}
 
 
 
-// watchlistTable =document.getElementById('portfolio')
-      // const newRow = watchlistTable.insertRow()
-      // const cell = newRow.insertCell();
-      // cell.textContent = ticker + '  '+ name + '  '+ price + '  '+change
-      // let removeButton = document.createElement('button');
-      // removeButton.textContent = 'Remove';
-      // cell.append(removeButton)
-      // removeButton.id='remove'
+document.addEventListener('DOMContentLoaded', (event) => {
+  // Select the button by its ID
+  const quoteButton = document.getElementById('quote');
+
+  // Add click event listener to the button
+  quoteButton.addEventListener('click', (event) => {
+    // Prevent the default action of the event (e.g., form submission)
+    event.preventDefault();
+
+    // Call the validateTicker function
+    retrieveQuote();
+  });
+});
 
 
+function removeTickerFromDOMAndLocalStorage(row, ticker) {
+  row.parentNode.removeChild(row);
+  watchlist = watchlist.filter(symbol => symbol !== ticker);
+  localStorage.setItem('watchlist', JSON.stringify(watchlist));
+  console.log('remove', row, ticker);
 
-      // user_input.value=''
 
+  // need to send  DELETE ticker to backend
 
-
-    // .catch(error => {
-    //   console.error('Error fetching quote:', error);
-    //   return 1
-    // });
+}
 
 
 
@@ -107,151 +152,34 @@ function addToWatchlist() {
 
 document.addEventListener('DOMContentLoaded', (event) => {
   // Select the button by its ID
- const addTicker = document.getElementById('add');
- event.preventDefault()
+  const removeButton = document.getElementById('remove');
 
   // Add click event listener to the button
-  addTicker.addEventListener('click',addToWatchlist )
+  removeButton.addEventListener('click', (event) => {
+    // Prevent the default action of the event (e.g., form submission)
+    event.preventDefault();
 
+    // Call the validateTicker function
+    removeTicker();
+  });
 });
-
 
 
 function updateWatchlist(watchlist) {
-  watchlist.forEach(ticker => {
 
-    const url = `http://127.0.0.1:5000/quote/${ticker}`;
-
-    axios.get(url)
-      .then(response => {
-
-        let price = response.data.regularMarketPrice;
-        let name = response.data.shortName;
-        let change = response.data.regularMarketChange;
+ let url = 'http://127.0.0.1:5000/update_watchlist';
+   axios.post(url, watchlist)
+   .then(response => {
+    console.log('Response from server:', response.data)
+   });
 
 
 
-        console.log(`Quote for ${ticker}:`, price , change , name);
-        return displayWatchlist(ticker,price,change,name)
-
-        // You can also call a function to update the UI with this quote
-      })
-
-      .catch(error => {
-        // Handle errors here
-        console.error(`Error fetching quote for ${ticker}:`, error);
-      });
-  } );
 
 
+  // } catch {
+  //   console.log('error with watchlist');
+  //   return 1;
+  // }
+ ;
 }
-
-function displayWatchlist(ticker, price, change, name) {
-  let portfolioTable = document.getElementById('portfolio-Table');
-
-  // Create a new row
-  let row = document.createElement('tr');
-
-  // Create and append the ticker cell
-  let tickerCell = document.createElement('td');
-  tickerCell.textContent = ticker;
-  row.appendChild(tickerCell);
-
-  // Create and append the price cell
-  let priceCell = document.createElement('td');
-  priceCell.textContent = price;
-  row.appendChild(priceCell);
-
-  // Create and append the change cell
-  let changeCell = document.createElement('td');
-  changeCell.textContent = change;
-  row.appendChild(changeCell);
-
-  // Create and append the name cell
-  let nameCell = document.createElement('td');
-  nameCell.textContent = name;
-  row.appendChild(nameCell);
-
-  // Append the row to the table
-  portfolioTable.appendChild(row);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// function removeTicker() {
-//   const ticker = document.getElementById('stockTicker').value;
-//   axios.post('/api/stock/remove', { ticker })
-//       .then(() => updateWatchlist())
-//       .catch(error => console.error(error));
-// }
-
-// function updateWatchlist() {
-//   axios.get('/api/stock/get')
-//       .then(response => {
-//           const watchlist = response.data.watchlist.map(item => item[0]).join(', ');
-//           document.getElementById('watchlist').innerText = watchlist;
-//       })
-//       .catch(error => console.error(error));
-// }
-
-// // Initial watchlist update
-// updateWatchlist();
-// let counter=15;
-
-// function updatePortfolio(){
-
-//   let countdown = setInterval(function(){
-//     counter --;
-//     console.log(counter)
-//     if(counter <=1){
-//       //remove this when constand polling
-//       clearInterval(countdown);
-//     }
-
-
-//   },1000)
-// }
-
-// let stockTickers = [];
-
-// // Function to add a ticker to the array
-// function addTicker(newTicker) {
-//     // Check if the ticker is already in the array
-//     if (!stockTickers.includes(newTicker)) {
-//         stockTickers.push(newTicker); // Add the new ticker
-//     } else {
-//         console.log("Ticker already exists in the portfolio.");
-//     }
-// }
-
-// // Example usage
-// addTicker("AAPL"); // Adding Apple Inc. ticker
-// addTicker("MSFT"); // Adding Microsoft Corp. ticker
-
-//add Ticker to portfolio
-//user enters ticker into form
-//user clicks 'add' to watchlist
-//ticker is added to watchlist array
-
-
-
-
-
-//loop through the watchlist
-//call backend to write ticker to db
-//call quote endpoint to receive quotes every 15 seconds

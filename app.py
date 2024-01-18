@@ -28,7 +28,7 @@ app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 
 @app.route('/')
 def show_dashboard():
-    return render_template('input_ticker.html')
+    return render_template('portfolio.html')
 
 @app.route('/market_summary')
 def get_market_summary():
@@ -175,6 +175,14 @@ def get_quote(symbol):
     return jsonify(data)  # Convert to JSON response
 
 
+@app.route('/update_watchlist',methods=['POST'])
+def update_watchlist():
+    data = request.json
+
+    tickers = yq.Ticker(data)
+    prices = tickers.price
+    print(jsonify(prices))
+    return prices
 
 
 
