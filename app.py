@@ -1,15 +1,20 @@
 import yahooquery as yq
-
 from fredapi import Fred
 import requests
 import openai
 from openai import OpenAI
 from urllib.parse import quote
 from flask_cors import CORS
-from flask import Flask, request, render_template, jsonify,redirect, flash, session
+from flask import Flask, request, render_template, jsonify,redirect, url_for,flash, session,jsonify
 from secret import OPENAI_API_KEY,FRED_API_KEY,JOKE_API_KEY,WEATHER_API_KEY
-
+from models import db, User, Watchlist # Import the models
+from forms import UserForm # Import the form
 import datetime
+from flask_sqlalchemy import SQLAlchemy
+
+
+
+
 
 today = datetime.date.today()
 end = today + datetime.timedelta(days=10)
@@ -22,13 +27,24 @@ client = OpenAI()
 
 app = Flask(__name__)
 CORS(app)
+
 app.config['SECRET_KEY'] = "never-tell!"
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///econ_dashboard'
+app.config['SECRET_KEY'] = 'your_secret_key'
+db.init_app(app)
+app.app_context().push()
+
+
+
+db.create_all()
+
+
 
 
 @app.route('/')
-def show_dashboard():
-    return render_template('portfolio.html')
+def show_login():
+    return redirect('/register')
 
 @app.route('/market_summary')
 def get_market_summary():
@@ -106,14 +122,11 @@ def get_company_news(symbol):
 
     news_count=5
     news= yq.search(symbol, news_count={news_count})
-
     return news
 
 
-
-
 @app.route('/horoscope')
-def test_gpt(sign='gemini'):
+def test_gpt(sign='gemini'):#change to form input for horoscope
     openai.api_key = OPENAI_API_KEY
 
     completion = client.chat.completions.create(
@@ -144,7 +157,7 @@ def joke_of_the_day():
 @app.route('/weather')
 def get_weather():
     base_url = "https://open-weather13.p.rapidapi.com/city/"
-    city ="Miami Beach"
+    city ="Miami Beach"#change to form input for city
     encoded_city=quote(city)
 
 
@@ -184,78 +197,51 @@ def update_watchlist():
     print(jsonify(prices))
     return prices
 
+@app.route('/register',methods=['GET','POST'])
+def register():
+    form = UserForm()
+    if form.validate_on_submit():
+        new_user = User(
+            first_name=form.first_name.data,
+            last_name=form.last_name.data,
+            login_id=form.login_id.data,
+            horoscope_sign=form.horoscope_sign.data,
+            city=form.city.data
+        )
+        db.session.add(new_user)
+        db.session.commit()
+        print("New User:", new_user)
+        print("New User ID:", new_user.id)
+
+        # Assuming new_user now has a 'user_id' attribute after being committed
+        return render_template('portfolio.html', userId=new_user.id)
+
+    return render_template('login.html', form=form)
 
 
+@app.route('/send_ticker',methods=['POST'])
+def add_ticker_to_db():
+    data = request.get_json()
+
+    print(f"ticker_code = add {data['ticker_code']} to the db")
+    # print(f"ticker name = add {data['ticker_name']} to the db")
+    print(f"ticker type =add {data['ticker_type']} to the db")
+    print(f"user id = add {data['user_id']} to the db")
 
 
-# from flask import Flask, request, render_template, redirecYour application running on port 5000 is available. Set, flash, session
-# import requests
-# from secret import API_KEY
+    #     data['ticker_code']=data.get('ticker_code'),
+    #     ticker_name=data.get('ticker_name'),
+    #     ticker_type=data.get('ticker_type'),
+    #     user_id=data.get('user_id')
 
-# app = Flask(__name__)
-# app.app_context().push()
-# app.config['SECRET_KEY'] = "never-tell!"
-# app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
+    # print('ticker is ',new_watchlist.ticker_code)
+    # print('name is: ',new_watchlist.ticker_name)
+    # print('type is: ', new_watchlist.ticker_type)
+    # print('user id is : ',new_watchlist.user_id)
 
+    # # db.session.add(new_watchlist)
+    # db.session.commit()
 
-# #alphavantage
-# BASE_URL='https://www.alphavantage.co/query?'
-
-# function='GLOBAL_QUOTE'
-# # symbol='AAPL'
-
-# https://www.alphavantage.co/query?function=REAL_GDP&interval=annual&apikey=API_KEY
-
-
-# @app.route('/')
-# def enter_ticker():
-#     return render_template('input_ticker.html')
-
-# @app.route('/data',methods=['GET','POST'])
-# def equities():
-#     ticker = request.form['ticker']
-
-#     quote_data = get_quotes(ticker)
-
-#     news=get_news(ticker)
-
-#     return render_template('quote.html',quote=quote_data,news=news)
-
-
-# def get_quotes(ticker):
-#     url=f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={ticker}&apikey={API_KEY}"
-
-#     r = requests.get(url)
-#     data= r.json()
-
-
-
-
-
-#     return data
-
-# def get_news(ticker):
-#     url=f"https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers={ticker}&apikey={API_KEY}"
-
-
-#     r = requests.get(url)
-#     headlines = r.json()
-
-#     return headlines
-# # https://api.stockdata.org/v1/news/all?symbols=TSLA,AMZN,MSFT&filter_entities=true&language=en&api_token=Zrm3ez7JBHiM7mfGmuJlccTh8FCDQLljyD1QYI43
-
-
-#     # # Access specific elements
-#     # symbol = global_quote["01. symbol"]
-#     # price = global_quote["05. price"]
-#     # high=global_quote["03. high"]
-#     # low=global_quote["04. low"]
-#     # previous=global_quote["08. previous close"]
-#     # change=global_quote["09. change"]
-#     # pct_change=global_quote["10. change percent"]
-
-#     # print("Symbol:", symbol)
-#     # print("Price:", price)
-#     # print("change:", change)
-#     # print("Pct", pct_change)
+    return data
+    # jsonify({'message': 'New watchlist item added successfully!'}), 201
 

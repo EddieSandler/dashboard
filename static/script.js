@@ -1,5 +1,11 @@
 let watchlistButtonClickListener;
 let watchlist = JSON.parse(localStorage.getItem('watchlist')) || [];
+const userId = document.getElementById('userId').textContent;
+console.log(userId);
+//.getAttribute('data-user-id');
+console.log(userId);
+
+// localStorage.setItem('user', JSON.stringify(userId));
 
 //load watchlist from db
 //populate quote/change
@@ -15,6 +21,7 @@ let watchlist = JSON.parse(localStorage.getItem('watchlist')) || [];
 
 
 async function retrieveQuote() {
+
   let user_input = document.getElementById('ticker');
   let ticker = user_input.value.toUpperCase();
   user_input.value = '';
@@ -45,7 +52,7 @@ function displayQuote(response, ticker) {
   document.getElementById('changeField').textContent = response.data.regularMarketChange;
   document.getElementById('Pctchange').textContent = response.data.regularMarketChangePercent;
   document.getElementById('nameField').textContent = response.data.shortName;
-
+  let ticker_type = response.data.quoteType;
   const watchlistButton = document.getElementById('add');
   watchlistButton.removeEventListener('click', watchlistButtonClickListener);
 
@@ -56,6 +63,7 @@ function displayQuote(response, ticker) {
   function handleWatchlistButtonClick(data, ticker) {
     // Call addToWatchlist with the correct parameters
     watchlistButton.removeEventListener('click', handleWatchlistButtonClick);
+
     addToWatchlist(data, ticker);
   }
 }
@@ -74,6 +82,7 @@ function addToWatchlist(data, ticker) {
     watchlist.push(ticker);
     localStorage.setItem('watchlist', JSON.stringify(watchlist));
 
+    addTickerToDatabase(data, userId);
 
     return displayQuoteInWatchlist(ticker, data);
   }
@@ -114,9 +123,12 @@ function displayQuoteInWatchlist(ticker, data) {
   };
 
   table.appendChild(row);
-  updateWatchlist(watchlist);
+
+  return addTickerToDatabase(ticker, data, userId);
+
 
 }
+
 
 
 
@@ -167,19 +179,31 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
 function updateWatchlist(watchlist) {
 
- let url = 'http://127.0.0.1:5000/update_watchlist';
-   axios.post(url, watchlist)
-   .then(response => {
-    console.log('Response from server:', response.data)
-   });
+  let url = 'http://127.0.0.1:5000/update_watchlist';
+  axios.post(url, watchlist)
+    .then(response => {
+      console.log('Response from server:', response.data);
+    });
 
+}
 
+async function addTickerToDatabase(ticker, data, userId) {
 
+  let url = 'http://127.0.0.1:5000/send_ticker';
 
+  let params =
+  {
 
-  // } catch {
-  //   console.log('error with watchlist');
-  //   return 1;
-  // }
- ;
+    "ticker_code": ticker,
+    "ticker_name": data.displayName,
+    "ticker_type": data.quoteType,
+    "user_id": userId
+
+  };
+  let response = await axios.post(url, params)
+  .then(response => {
+    console.log('Response from server:', response.data);
+  });
+  console.log(response)
+
 }
