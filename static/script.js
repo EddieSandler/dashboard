@@ -82,7 +82,7 @@ function addToWatchlist(data, ticker) {
     watchlist.push(ticker);
     localStorage.setItem('watchlist', JSON.stringify(watchlist));
 
-    addTickerToDatabase(data, userId);
+
 
     return displayQuoteInWatchlist(ticker, data);
   }
@@ -123,8 +123,13 @@ function displayQuoteInWatchlist(ticker, data) {
   };
 
   table.appendChild(row);
+  console.log(ticker)
+  console.log(data.shortName)
+  console.log(data.quoteType)
+  console.log(userId)
 
-  return addTickerToDatabase(ticker, data, userId);
+
+  return addTickerToDatabase(ticker, data.shortName,data.quoteType, userId);
 
 
 }
@@ -187,23 +192,23 @@ function updateWatchlist(watchlist) {
 
 }
 
-async function addTickerToDatabase(ticker, data, userId) {
-
-  let url = 'http://127.0.0.1:5000/send_ticker';
-
+async function addTickerToDatabase(ticker, tickerName,tickerType, userId) {
   let params =
   {
 
     "ticker_code": ticker,
-    "ticker_name": data.displayName,
-    "ticker_type": data.quoteType,
+    "ticker_name":tickerName,
+    "ticker_type": tickerType,
     "user_id": userId
 
   };
+  let url = 'http://127.0.0.1:5000/send_ticker';
+
+
   let response = await axios.post(url, params)
   .then(response => {
-    console.log('Response from server:', response.data);
+    console.log('Response from server:', response);
   });
-  console.log(response)
-
+  // console.log(response)
+return console.log('done')
 }

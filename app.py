@@ -5,7 +5,7 @@ import openai
 from openai import OpenAI
 from urllib.parse import quote
 from flask_cors import CORS
-from flask import Flask, request, render_template, jsonify,redirect, url_for,flash, session,jsonify
+from flask import Flask, request, render_template, jsonify,redirect, url_for,flash, session
 from secret import OPENAI_API_KEY,FRED_API_KEY,JOKE_API_KEY,WEATHER_API_KEY
 from models import db, User, Watchlist # Import the models
 from forms import UserForm # Import the form
@@ -219,14 +219,54 @@ def register():
     return render_template('login.html', form=form)
 
 
-@app.route('/send_ticker',methods=['POST'])
+@app.route('/send_ticker',methods=['GET','POST'])
 def add_ticker_to_db():
     data = request.get_json()
+    new_entry = Watchlist(
+            ticker_code=data['ticker_code'],
+            ticker_name=data['ticker_name'],
+            ticker_type=data['ticker_type'],
+            user_id=data['user_id']
+        )
+    db.session.add(new_entry)
 
-    print(f"ticker_code = add {data['ticker_code']} to the db")
+    db.session.commit()
+    # db.session.add(new_entry)
+
+    # db.session.commit()
+    return 'Entries added to watchlist', 200
+    # watchList=  Watchlist(
+    #     ticker_code =data['ticker'],
+    #     ticker_name = data['ticker_name'],
+    #     ticker_type = data['ticker_type'],
+    #     user_id= data['user_id']
+    # )
+
+
+
+
+
+    # print('here is new dict',new_dict)
+    # watchlist=Watchlist(**new_dict)
+    # db.session.add(watchList)
+    # db.session.commit()
+
+# Add to the session and commit
+
+
+
+
+    # print(data.keys())
+    # print(data.values())
+
+    # print(data['ticker_type'])
+    # print(data['ticker_name'])
+    # print(data['user_id'])
+
+    # print(f"ticker_code = add {data['ticker_code']} to the db")
     # print(f"ticker name = add {data['ticker_name']} to the db")
-    print(f"ticker type =add {data['ticker_type']} to the db")
-    print(f"user id = add {data['user_id']} to the db")
+    # # print(f"ticker type =add {data['ticker_type']} to the db")
+    # print(f"user id = add {data['user_id']} to the db")
 
 
     #     data['ticker_code']=data.get('ticker_code'),
@@ -242,6 +282,6 @@ def add_ticker_to_db():
     # # db.session.add(new_watchlist)
     # db.session.commit()
 
-    return data
+
     # jsonify({'message': 'New watchlist item added successfully!'}), 201
 
