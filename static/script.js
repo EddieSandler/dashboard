@@ -214,7 +214,7 @@ document.getElementById('zodiac-signs').addEventListener('change', function() {
   let url = `http://127.0.0.1:5000/horoscope/${selectedSign}`
   axios.get(url)
   .then(function (response) {
-   
+
     let reading =document.getElementById('todays-horoscope')
     reading.innerHTML=`${selectedSign} - ${response.data}`
 })
@@ -224,3 +224,90 @@ document.getElementById('zodiac-signs').addEventListener('change', function() {
 
 
 });
+
+
+document.getElementById('btn-city').addEventListener('click',getWeather)
+
+function getWeather() {
+
+  let city=document.getElementById('input-city').value
+  let url = `http://127.0.0.1:5000/weather/${city}`
+  axios.get(url)
+  .then(function (response) {
+    // let weather=document.getElementById('todays-weather')
+    // weather.innerHTML=`${city}-${response.data}`
+
+    let location=response.data.location.name
+    let temp=response.data.data.values.temperature
+    let humidity=response.data.data.values.humidity
+    let precipitation=response.data.data.values.precipitationProbability
+
+    document.getElementById("location").innerHTML=location
+    document.getElementById("temp").innerHTML=temp
+    document.getElementById("humidity").innerHTML=humidity
+    document.getElementById("precipitation").innerHTML=precipitation
+
+    document.getElementById('todays-weather')
+
+})
+.catch(function (error) {
+    console.error(error); // Handle errors
+});
+
+
+
+}
+
+async function get_marketSummary(){
+  let table = document.getElementById('market-summary');
+  url='http://127.0.0.1:5000/market_summary'
+
+  response=await axios.get(url)
+  .then(function (response) {
+
+for(let item of response.data){
+  var row = table.insertRow();
+
+  var cell1 = row.insertCell(0);
+  var cell2 = row.insertCell(1);
+  var cell3 = row.insertCell(2);
+  var cell4 = row.insertCell(3);
+
+  if(item.longName){
+    cell1.innerHTML = item.longName;
+
+  } else {
+    cell1.innerHTML = item.shortName;
+  }
+  cell2.innerHTML=item.regularMarketPrice.fmt
+  cell3.innerHTML=item.regularMarketChange.fmt
+  cell4.innerHTML=item.regularMarketChangePercent.fmt
+
+
+  }
+
+})
+
+// add listener to reload
+}
+
+function get_news(){
+
+  url='http://127.0.0.1:5000/us_news'
+  axios.get(url)
+  .then(function (response) {
+
+    for (let item of response.data.news){
+      console.log(item.link,item.title)
+    }
+})
+.catch(function (error) {
+    console.error(error); // Handle errors
+});
+
+}
+
+
+
+
+

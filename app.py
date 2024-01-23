@@ -49,31 +49,10 @@ def show_login():
 @app.route('/market_summary')
 def get_market_summary():
     data=yq.get_market_summary(country='united states')
-    # for item in data:
-    #     try:
-    #         print(item['longName'],item['regularMarketPrice']['fmt'],item['regularMarketChangePercent']['fmt'])
 
-    #     except KeyError:
-    #         print(item['shortName'],item['regularMarketPrice']['fmt'],item['regularMarketChangePercent']['fmt'])
-    return render_template('market_summary.html',data=data)
+    return data
 
-# @app.route('/quote',methods=['GET','POST'])
-# def get_quote():
-#     symbol = request.form['ticker'].upper()
-#     quote = yq.Ticker(symbol)
-#     data=quote.quotes[symbol]
-    # name=quote.quotes[symbol]['shortName']
-    # price = quote.quotes[symbol]['regularMarketPrice']
-    # change = quote.quotes[symbol]['regularMarketChangePercent']
-    # range=quote.quotes[symbol]['regularMarketDayRange']
-    # open=quote.quotes[symbol]['regularMarketOpen']
-    # prev_close=quote.quotes[symbol]['regularMarketPreviousClose']
-    # bid_size=quote.quotes[symbol]['bid']
-    # ask=quote.quotes[symbol]['ask']
-    # bid_size=quote.quotes[symbol]['bidSize']
-    # ask_size=quote.quotes[symbol]['askSize']
-    # company_news=get_company_news(symbol)
-    # return render_template('quote.html',data=data,news=company_news,symbol=symbol)
+
 
 @app.route('/economic_data')
 def show_economic_data():
@@ -113,7 +92,7 @@ def get_eco_calendar():
 def get_us_news():
     us_news= yq.search('https://news.yahoo.com/us',news_count=5)
 
-    return render_template('us_news.html',news=us_news)
+    return us_news
 
 
 
@@ -144,7 +123,7 @@ def test_gpt(sign):
 
 
     response=str(msg)
-   
+
     return response
 
 
@@ -162,32 +141,37 @@ def joke_of_the_day():
 
     return render_template('joke.html',joke=joke['body'])
 
-@app.route('/weather')
-def get_weather():
-    base_url = "https://open-weather13.p.rapidapi.com/city/"
-    city ="Miami Beach"#change to form input for city
+
+
+@app.route('/weather/<city>')
+def get_weather(city):
     encoded_city=quote(city)
+    base_url =f"https://api.tomorrow.io/v4/weather/realtime?location={encoded_city}&units=imperial&apikey={WEATHER_API_KEY}"
 
 
-    headers = {"X-RapidAPI-Key":f"{WEATHER_API_KEY}",
-               "X-RapidAPI-Host": "open-weather13.p.rapidapi.com"}
 
-    response = requests.get(base_url+encoded_city, headers=headers)
+
+    headers = {"accept": "application/json"}
+
+    response = requests.get(base_url, headers=headers)
 
     weather=response.json()
-    degree_symbol = '\u00B0'
-    current_temp=round(weather['main']['temp'])
-    high_temp= round(weather['main']['temp_max'])
-    low_temp=round(weather['main']['temp_min'])
-    humidity=round(weather['main']['humidity'])
+    print(response)
+    # degree_symbol = '\u00B0'
+    # current_temp=round(weather['main']['temp'])
+    # high_temp= round(weather['main']['temp_max'])
+    # low_temp=round(weather['main']['temp_min'])
+    # humidity=round(weather['main']['humidity'])
 
-    print('Weather in ',city)
-    print('Current Temp: ',current_temp,degree_symbol)
-    print('High: ',high_temp,degree_symbol)
-    print('Low: ',low_temp,degree_symbol)
-    print('Humidity: ',humidity,'%')
+    # print('Weather in ',city)
+    # print('Current Temp: ',current_temp,degree_symbol)
+    # print('High: ',high_temp,degree_symbol)
+    # print('Low: ',low_temp,degree_symbol)
+    # print('Humidity: ',humidity,'%')
 
-    return render_template('weather.html',temp=current_temp)
+    return weather
+
+    # return render_template('weather.html',temp=current_temp)
 
 @app.route('/quote/<symbol>')
 def get_quote(symbol):
