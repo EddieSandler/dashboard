@@ -1,23 +1,11 @@
 let watchlistButtonClickListener;
-let watchlist = JSON.parse(localStorage.getItem('watchlist')) || [];
+let watchlist = JSON.parse(sessionStorage.getItem('watchlist')) || [];
 const userId = document.getElementById('userId').textContent;
 console.log(userId);
 //.getAttribute('data-user-id');
 console.log(userId);
 
 // localStorage.setItem('user', JSON.stringify(userId));
-
-//load watchlist from db
-//populate quote/change
-//display Watchlist on DOM
-//update price/change every 15 seconds while on the page
-
-//add watchlist ticker to db
-//remove watchlist ticker from db
-//error handling for blank tickers
-//advise user to enter crypto as BTC-US SOL-US etc
-//create default watchlist with equity and crypto and FX
-
 
 
 async function retrieveQuote() {
@@ -155,7 +143,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 function removeTickerFromDOMAndLocalStorage(row, ticker) {
   row.parentNode.removeChild(row);
   watchlist = watchlist.filter(symbol => symbol !== ticker);
-  localStorage.setItem('watchlist', JSON.stringify(watchlist));
+  sessionStorage.setItem('watchlist', JSON.stringify(watchlist));
   console.log('remove', row, ticker);
 
 
@@ -212,3 +200,27 @@ async function addTickerToDatabase(ticker, tickerName,tickerType, userId) {
   // console.log(response)
 return console.log('done')
 }
+
+
+window.addEventListener('beforeunload', function() {
+  localStorage.clear();
+});
+
+
+
+document.getElementById('zodiac-signs').addEventListener('change', function() {
+  var selectedSign = this.value;
+  console.log(selectedSign)
+  let url = `http://127.0.0.1:5000/horoscope/${selectedSign}`
+  axios.get(url)
+  .then(function (response) {
+   
+    let reading =document.getElementById('todays-horoscope')
+    reading.innerHTML=`${selectedSign} - ${response.data}`
+})
+.catch(function (error) {
+    console.error(error); // Handle errors
+});
+
+
+});

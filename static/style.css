@@ -1,4 +1,4 @@
-body {
+ body {
   margin: 0;
   font-family: Arial, sans-serif;
 }
@@ -30,7 +30,7 @@ body {
   position: absolute;
   bottom: 0;
   left: 0;
-  width: 25%; /* Image takes full width of the sidebar */
+  width: 25%; /*Image takes full width of the sidebar*/
   height: auto; /* Maintain aspect ratio */
 }
 
@@ -58,3 +58,4 @@ td.quote-input {
   vertical-align: top; /* Keeps content aligned to the top, if any */
   border: 1px solid #ccc; /* Optional, for visual aid to see the cells */
 }
+

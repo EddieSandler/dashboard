@@ -1,0 +1,118 @@
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f8f9fa;
+  color: #333;
+}
+
+.dashboard {
+  max-width: 1200px;
+  margin: auto;
+  padding: 20px;
+}
+
+.header h1 {
+  background-color: #007bff;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.sidebar {
+  background-color: #ffffff;
+  padding: 1px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.main-content {
+  background-color: #ffffff;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.table {
+  width: 100%;
+  margin-bottom: 1rem;
+  color: #212529;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem;
+  vertical-align: top;
+  border-top: 1px solid #dee2e6;
+}
+
+.table thead th {
+  vertical-align: bottom;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.table tbody + tbody {
+  border-top: 2px solid #dee2e6;
+}
+
+.section h2 {
+  background-color: #17a2b8;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+}
+.sidebar h2 {
+  background-color: #17a2b8;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+ul {
+  padding-left: 20px;
+}
+
+ul li {
+  margin-bottom: 5px;
+}
+
+ul li a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+ul li a:hover {
+  text-decoration: underline;
+}
+
+.fun-stuff h3 {
+  color: #28a745;
+  margin-top: 15px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .sidebar, .main-content {
+      margin-bottom: 10px;
+  }
+}
+
+.min-height-div {
+  min-height: 200px; /* Adjust the value as needed */
+}
+
+.form-group {
+  max-width: 300px; /* Adjust the width of the dropdown */
+  margin: auto; /* Center the form in the middle of the page */
+}
+
+.btn custom-button {
+  background-color: #007bff; /* Change background color */
+  color: white; /* Change text color */
+  border-radius: 10px; /* Rounded corners */
+  padding: 10px 20px; /* Padding around the text */
+  border: none; /* Remove default border */
+  transition: all 0.3s ease; /* Smooth transition for hover effect */
+}

@@ -125,9 +125,10 @@ def get_company_news(symbol):
     return news
 
 
-@app.route('/horoscope')
-def test_gpt(sign='gemini'):#change to form input for horoscope
+@app.route('/horoscope/<sign>',methods=['GET'])
+def test_gpt(sign):
     openai.api_key = OPENAI_API_KEY
+    print(sign)
 
     completion = client.chat.completions.create(
         model="gpt-3.5-turbo",
@@ -137,8 +138,15 @@ def test_gpt(sign='gemini'):#change to form input for horoscope
 
         ]
     )
-    msg = completion.choices[0].message
-    return render_template('horoscope.html', msg=msg)
+    msg = completion.choices[0].message.content
+
+
+
+
+    response=str(msg)
+   
+    return response
+
 
 @app.route('/joke')
 def joke_of_the_day():
@@ -214,7 +222,7 @@ def register():
         print("New User ID:", new_user.id)
 
         # Assuming new_user now has a 'user_id' attribute after being committed
-        return render_template('portfolio.html', userId=new_user.id)
+        return render_template('dashboard.html', userId=new_user.id)
 
     return render_template('login.html', form=form)
 
@@ -231,57 +239,5 @@ def add_ticker_to_db():
     db.session.add(new_entry)
 
     db.session.commit()
-    # db.session.add(new_entry)
 
-    # db.session.commit()
     return 'Entries added to watchlist', 200
-    # watchList=  Watchlist(
-    #     ticker_code =data['ticker'],
-    #     ticker_name = data['ticker_name'],
-    #     ticker_type = data['ticker_type'],
-    #     user_id= data['user_id']
-    # )
-
-
-
-
-
-    # print('here is new dict',new_dict)
-    # watchlist=Watchlist(**new_dict)
-    # db.session.add(watchList)
-    # db.session.commit()
-
-# Add to the session and commit
-
-
-
-
-    # print(data.keys())
-    # print(data.values())
-
-    # print(data['ticker_type'])
-    # print(data['ticker_name'])
-    # print(data['user_id'])
-
-    # print(f"ticker_code = add {data['ticker_code']} to the db")
-    # print(f"ticker name = add {data['ticker_name']} to the db")
-    # # print(f"ticker type =add {data['ticker_type']} to the db")
-    # print(f"user id = add {data['user_id']} to the db")
-
-
-    #     data['ticker_code']=data.get('ticker_code'),
-    #     ticker_name=data.get('ticker_name'),
-    #     ticker_type=data.get('ticker_type'),
-    #     user_id=data.get('user_id')
-
-    # print('ticker is ',new_watchlist.ticker_code)
-    # print('name is: ',new_watchlist.ticker_name)
-    # print('type is: ', new_watchlist.ticker_type)
-    # print('user id is : ',new_watchlist.user_id)
-
-    # # db.session.add(new_watchlist)
-    # db.session.commit()
-
-
-    # jsonify({'message': 'New watchlist item added successfully!'}), 201
-
