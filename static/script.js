@@ -318,26 +318,102 @@ let headlines=document.getElementById('news')
 }
 async function jokeMe(){
   url='http://127.0.0.1:5000/joke'
-let deepThought=document.getElementById('joke')
+let joke=document.getElementById('joke')
   await axios.get(url)
   .then(function (response) {
-    console.log(response)
-    deepThought.innerHTML=response.data.body
+    joke.innerHTML=response.data
+
 
 })
 }
+
+const joker=document.getElementById('joke-me')
+
+joker.addEventListener('click',jokeMe)
+
+
+
 
 async function getEcoNums(){
   url='http://127.0.0.1:5000/economic_data'
-let eco=document.getElementById('ecoStats')
+let econTable=document.getElementById('ecoStats')
   await axios.get(url)
   .then(function (response) {
-    console.log(response)
+
+    for (let item in response.data) {
+
+          // Create a new row
+          const row = document.createElement('tr');
+
+          // Create the first cell for the indicator name
+          const nameCell = document.createElement('td');
+          nameCell.textContent = item;
+          row.appendChild(nameCell);
+
+          // Create the second cell for the indicator value
+          const valueCell = document.createElement('td');
+          valueCell.textContent = response.data[item];
+          row.appendChild(valueCell);
+
+          // Append the new row to the table
+          econTable.appendChild(row);
+      }
+  })
 
 
-})
+
+    }
+async function get_econ_calendar(){
+  url ='http://127.0.0.1:5000/calendar'
+
+  response= await axios.get(url)
+  display_econ_calendar(response)
+}
+
+function display_econ_calendar(data) {
+  const container=document.getElementById('econ-calendar')
+  const table = document.getElementById('eco-releases');
+  data.data.map((el)=>{
+    for (const [key, value] of Object.entries(el)) {
+
+    console.log('key',key,'value',value)
+    const row = document.createElement('tr')
+    const keyCell = document.createElement('td');
+    keyCell.textContent = key
+    row.append(keyCell);
+    const valueCell = document.createElement('td');
+            if (el.value !== 'NA') {
+                const link = document.createElement('a');
+                link.href = value;
+                link.textContent = value;
+                valueCell.append(link);
+            } else {
+                valueCell.textContent = 'NA';
+            }
+            row.append(valueCell);
+            table.appendChild(row);
+
+          }
+  });
+  container.appendChild(table);
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

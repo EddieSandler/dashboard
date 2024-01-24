@@ -17,7 +17,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 
 today = datetime.date.today()
-end = today + datetime.timedelta(days=10)
+end = today + datetime.timedelta(days=5)
 
 
 
@@ -65,7 +65,7 @@ def show_economic_data():
         '30-Yr Mortgage:':'MORTGAGE30US',
         'FED FUNDS:':'FEDFUNDS',
         'Industrial Production:':'INDPRO',
-        'Non FArm Payrolls:':'PAYEMS',
+        'Non Farm Payrolls:':'PAYEMS',
         'Initial Jobless Claims:':'ICSA'
 
         }
@@ -75,15 +75,63 @@ def show_economic_data():
 def get_eco_data(ticker):
 
     response=fred.get_series(ticker)
-    return response
+    return response[-1]
 
 @app.route('/calendar')
 def get_eco_calendar():
     url= f'https://api.stlouisfed.org/fred/releases/dates?realtime_start={today}&realtime_end={end}&limit=10&file_type=json&api_key={FRED_API_KEY}'
     response = requests.get(url)
     data = response.json()
+    links=[]
 
-    return render_template('economic_calendar.html',data=data)
+    for item in data['release_dates']:
+        id=item['release_id']
+
+
+        links.append(get_link(id))
+    return links
+
+
+
+
+
+
+
+def get_link(id):
+    url=f'https://api.stlouisfed.org/fred/release?release_id={id}&api_key={FRED_API_KEY}&file_type=json'
+    response = requests.get(url)
+    data = response.json()
+    my_dict={}
+
+
+    # for item in data['releases'][0]['link'],data['releases'][0]['name']
+    # for item in data['releases']:
+    #     if 'link' not in item:
+    #         my_dict[item['name']]='NA'
+    #         print([item['name']])
+
+    #     else:
+    #         print(item['name'],item['link'])
+    #         my_dict[item['name']]=item['link']
+    # print('my dict',my_dict)
+    for item in data['releases']:
+        name = item['name']
+        link = item.get('link', 'NA')
+    if name not in my_dict:
+        my_dict[name] = link
+    else:
+        my_dict[name]=link
+    return my_dict
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -129,18 +177,17 @@ def test_gpt(sign):
 
 @app.route('/joke')
 def joke_of_the_day():
-    joke_url = "https://world-of-jokes1.p.rapidapi.com/v1/jokes/random-joke-by-category"
-    querystring = {"category":"Deep Thoughts"}
-    headers = {
-    "X-RapidAPI-Key": f"{JOKE_API_KEY}",
-    "X-RapidAPI-Host": "world-of-jokes1.p.rapidapi.com"
-}
-    response = requests.get(joke_url, headers=headers, params=querystring)
 
-    joke=response.json()
-    print(joke)
+    headers={"Accept":"application/json"}
+    url="https://icanhazdadjoke.com"
+    response = requests.get(url,headers=headers)
+
+
+    joke=response.json()['joke']
 
     return joke
+
+
 
 
 

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/style2.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <div id="userId" style="display:none;"> {{userId}}</div>
+    <div class="dashboard">
+        <div class="header">
+            <h1>US Economic Dashboard</h1>
+        </div>
+        <div class="row">
+            <div class="col-md-7 min-height-div">
+                <div class="sidebar">
+                  <h2>Quotes</h2>
+                  <input type="text" id="ticker" placeholder="Enter Ticker">
+                  <button id="quote" >Get Quote</button>
+                  <table class="table">
+                   <tr>
+                        <th id="symbol">symbol</th>
+                        <th id="price">price</th>
+                        <th id="change">change</th>
+                        <th id="changePct">%change</th>
+                        <th id="name">Name</th>
+                    </tr>
+                    <tr class="quote-input">
+                        <td class="quote-input" id="symbolField"></td>
+                        <td class="quote-input" id="priceField"></td>
+                        <td class="quote-input" id="changeField"></td>
+                        <td class="quote-input" id="Pctchange"></td>
+                        <td class=" quote-input" id="nameField"></td>
+                    </tr>
+                </table>
+                <button id="add" >Add to Watchlist</button>
+
+                    <h2>Watch List</h2>
+
+                    <table class="table min-height-div" id="watchlist-table">
+                      <tr> <!-- Table Row -->
+                        <th id="watchlist-symbol">symbol</th> <!-- Table Header -->
+                        <th id="watchlist-price">price</th>
+                        <th id="watchlist-change">change</th>
+                        <th id="watchlist-changePct">%change</th>
+                        <th id="watchlist-name">Name</th>
+                    </tr>
+
+
+
+                    </table>
+
+                    <div class="section fun-stuff">
+                      <h3>Weather</h3>
+                      <div class="input-container">
+                        <label for="customInput">Select City:</label>
+                        <input type="text" class="form-control custom-input" id="input-city" placeholder="Enter text here">
+                        <button id="btn-city" >Submit</button>
+                    </div>
+                      <div id="todays-weather">
+                <span>Weather for :<p id="location"></span></p>
+                       <span>CurrentTemp:<p id="temp"></p></span>
+                        <span>Humidity:<p id="humidity"></p></span>
+                        <span>Chance of Precipitation:<p id="precipitation"></p></span>
+                        </div>
+
+
+
+
+
+                      <div class="container mt-4">
+
+                      <h3>Horoscope</h3>
+                      <form>
+                        <div class="form-group">
+                            <label for="zodiac-signs">Select your Sign:</label>
+                            <select class="form-control" id="zodiac-signs">
+                                <option></option placeholder="select sign">
+                                <option>Aries</option>
+                                <option>Taurus</option>
+                                <option>Gemini</option>
+                                <option>Cancer</option>
+                                <option>Leo</option>
+                                <option>Virgo</option>
+                                <option>Libra</option>
+                                <option>Scorpio</option>
+                                <option>Sagittarius</option>
+                                <option>Capricorn</option>
+                                <option>Aquarius</option>
+                                <option>Pisces</option>
+                            </select>
+                        </div>
+                    </form>
+                    </div>
+                      <p id="todays-horoscope"><strong></strong></p>
+
+
+                      <div class="container mt-3">
+                        <h3>Deep Thought of the Day</h3>
+                      <p id="joke"></p>
+                        <button type="button" id="joke-me" class="btn custom-button">Get another joke</button>
+                    </div>
+
+</div>
+
+                    <!-- <p><img src="graph.jpg" alt="Graph" style="max-width: 100%; height: auto;"></p> -->
+                </div>
+
+            </div>
+
+            <div class="col-md-5">
+                <div class="main-content">
+                    <div class="section">
+                        <h2> Market Summary</h2>
+                        <table class="table" id="market-summary">
+                            <tr>
+                                <th>Name</th>
+                                <th>Last</th>
+                                <th>Change</th>
+                                <th>Change(%)</th>
+                            </tr>
+
+                        </table>
+                    </div>
+                    <div class="section">
+                        <h2>Real-Time News Feed</h2>
+                        <div id="news">
+
+                        </div>
+                    </div>
+
+                    <div class="section" >
+                        <h2>Economic Indicators</h2>
+                        <table class="table" id="ecoStats">
+                            <tr>
+                                <th>Release</th>
+                                <th>Link</th>
+
+                            </tr>
+
+                        </table>
+                    </div>
+
+
+
+                    <div class="section" id="econ-calendar">
+                        <h2>Daily Economic Data Releases</h2>
+                        <table class="table" id="eco-releases">
+                            <tr>
+                                <th>Date</th>
+                                <th>Event</th>
+                                <th>Description</th>
+                            </tr>
+
+                        </table>
+                    </div>
+
+
+</div>
+           <script src="/static/script.js" defer></script></body>
+</html>
