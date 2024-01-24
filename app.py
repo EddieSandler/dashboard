@@ -70,7 +70,7 @@ def show_economic_data():
 
         }
     data = {key: get_eco_data(value) for key, value in economic_indicators.items()}
-    return render_template('economic_data.html', data=data)
+    return data
 
 def get_eco_data(ticker):
 
@@ -138,8 +138,9 @@ def joke_of_the_day():
     response = requests.get(joke_url, headers=headers, params=querystring)
 
     joke=response.json()
+    print(joke)
 
-    return render_template('joke.html',joke=joke['body'])
+    return joke
 
 
 

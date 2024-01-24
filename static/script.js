@@ -291,22 +291,53 @@ for(let item of response.data){
 // add listener to reload
 }
 
-function get_news(){
-
+async function get_news(){
+let headlines=document.getElementById('news')
   url='http://127.0.0.1:5000/us_news'
-  axios.get(url)
+  await axios.get(url)
   .then(function (response) {
 
-    for (let item of response.data.news){
-      console.log(item.link,item.title)
-    }
+    response.data.news.forEach(story => {
+      const row = document.createElement('div');
+      row.classList.add('news-row');
+
+      const link = document.createElement('a');
+      link.href = story.link;
+      link.textContent = story.title;
+      link.target = "_blank"; // Open in new tab
+
+      row.appendChild(link);
+      headlines.appendChild(row);
+  });
+
 })
 .catch(function (error) {
     console.error(error); // Handle errors
 });
 
 }
+async function jokeMe(){
+  url='http://127.0.0.1:5000/joke'
+let deepThought=document.getElementById('joke')
+  await axios.get(url)
+  .then(function (response) {
+    console.log(response)
+    deepThought.innerHTML=response.data.body
 
+})
+}
+
+async function getEcoNums(){
+  url='http://127.0.0.1:5000/economic_data'
+let eco=document.getElementById('ecoStats')
+  await axios.get(url)
+  .then(function (response) {
+    console.log(response)
+
+
+})
+
+}
 
 
 
