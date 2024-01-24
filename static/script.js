@@ -35,11 +35,26 @@ async function retrieveQuote() {
 function displayQuote(response, ticker) {
 
   const displayContainer = document.getElementById('quote-section');
-  document.getElementById('symbolField').textContent = ticker;
-  document.getElementById("priceField").textContent = response.data.regularMarketPrice;
-  document.getElementById('changeField').textContent = response.data.regularMarketChange;
-  document.getElementById('Pctchange').textContent = response.data.regularMarketChangePercent;
+ document.getElementById('symbolField').textContent = ticker;
+  price=document.getElementById("priceField")
+  price.textContent = response.data.regularMarketPrice;
+  changeD=document.getElementById('changeField')
+  changeD.textContent = response.data.regularMarketChange;
+  changeP=document.getElementById('Pctchange')
+  changeP.textContent = response.data.regularMarketChangePercent;
   document.getElementById('nameField').textContent = response.data.shortName;
+
+  if (response.data.regularMarketChange>0) {
+    price.className = 'positive';
+    changeD.className = 'positive';
+    changeP.className = 'positive';
+  } else {
+    price.className = 'negative';
+    changeD.className = 'negative';
+    changeP.className = 'negative';
+
+  }
+
   let ticker_type = response.data.quoteType;
   const watchlistButton = document.getElementById('add');
   watchlistButton.removeEventListener('click', watchlistButtonClickListener);
@@ -88,6 +103,8 @@ function displayQuoteInWatchlist(ticker, data) {
   priceCell.textContent = data.regularMarketPrice;
   row.appendChild(priceCell);
 
+
+
   const changeCell = document.createElement('td');
   changeCell.textContent = data.regularMarketChange;
   row.appendChild(changeCell);
@@ -95,6 +112,17 @@ function displayQuoteInWatchlist(ticker, data) {
   const PctchangeCell = document.createElement('td');
   PctchangeCell.textContent = data.regularMarketChangePercent;
   row.appendChild(PctchangeCell);
+
+  if (data.regularMarketChange > 0) {
+    changeCell.className = 'positive';
+    priceCell.className = 'positive';
+    PctchangeCell.className = 'positive';
+  } else {
+    changeCell.className = 'negative';
+    priceCell.className = 'negative';
+    PctchangeCell.className = 'negative';
+
+  }
 
 
   const nameCell = document.createElement('td');
@@ -111,13 +139,9 @@ function displayQuoteInWatchlist(ticker, data) {
   };
 
   table.appendChild(row);
-  console.log(ticker)
-  console.log(data.shortName)
-  console.log(data.quoteType)
-  console.log(userId)
 
 
-  return addTickerToDatabase(ticker, data.shortName,data.quoteType, userId);
+  return addTickerToDatabase(ticker, data.shortName, data.quoteType, userId);
 
 
 }
@@ -180,12 +204,12 @@ function updateWatchlist(watchlist) {
 
 }
 
-async function addTickerToDatabase(ticker, tickerName,tickerType, userId) {
+async function addTickerToDatabase(ticker, tickerName, tickerType, userId) {
   let params =
   {
 
     "ticker_code": ticker,
-    "ticker_name":tickerName,
+    "ticker_name": tickerName,
     "ticker_type": tickerType,
     "user_id": userId
 
@@ -194,206 +218,206 @@ async function addTickerToDatabase(ticker, tickerName,tickerType, userId) {
 
 
   let response = await axios.post(url, params)
-  .then(response => {
-    console.log('Response from server:', response);
-  });
+    .then(response => {
+      console.log('Response from server:', response);
+    });
   // console.log(response)
-return console.log('done')
+  return console.log('done');
 }
 
 
-window.addEventListener('beforeunload', function() {
+window.addEventListener('beforeunload', function () {
   localStorage.clear();
 });
 
 
 
-document.getElementById('zodiac-signs').addEventListener('change', function() {
+document.getElementById('zodiac-signs').addEventListener('change', function () {
   var selectedSign = this.value;
-  console.log(selectedSign)
-  let url = `http://127.0.0.1:5000/horoscope/${selectedSign}`
+  console.log(selectedSign);
+  let url = `http://127.0.0.1:5000/horoscope/${selectedSign}`;
   axios.get(url)
-  .then(function (response) {
+    .then(function (response) {
 
-    let reading =document.getElementById('todays-horoscope')
-    reading.innerHTML=`${selectedSign} - ${response.data}`
-})
-.catch(function (error) {
-    console.error(error); // Handle errors
+      let reading = document.getElementById('todays-horoscope');
+      reading.innerHTML = `${selectedSign} - ${response.data}`;
+    })
+    .catch(function (error) {
+      console.error(error); // Handle errors
+    });
+
+
 });
 
 
-});
-
-
-document.getElementById('btn-city').addEventListener('click',getWeather)
+document.getElementById('btn-city').addEventListener('click', getWeather);
 
 function getWeather() {
 
-  let city=document.getElementById('input-city').value
-  let url = `http://127.0.0.1:5000/weather/${city}`
+  let city = document.getElementById('input-city').value;
+  let url = `http://127.0.0.1:5000/weather/${city}`;
   axios.get(url)
-  .then(function (response) {
-    // let weather=document.getElementById('todays-weather')
-    // weather.innerHTML=`${city}-${response.data}`
+    .then(function (response) {
+      // let weather=document.getElementById('todays-weather')
+      // weather.innerHTML=`${city}-${response.data}`
 
-    let location=response.data.location.name
-    let temp=response.data.data.values.temperature
-    let humidity=response.data.data.values.humidity
-    let precipitation=response.data.data.values.precipitationProbability
+      let location = response.data.location.name;
+      let temp = response.data.data.values.temperature;
+      let humidity = response.data.data.values.humidity;
+      let precipitation = response.data.data.values.precipitationProbability;
 
-    document.getElementById("location").innerHTML=location
-    document.getElementById("temp").innerHTML=temp
-    document.getElementById("humidity").innerHTML=humidity
-    document.getElementById("precipitation").innerHTML=precipitation
+      document.getElementById("location").innerHTML = location;
+      document.getElementById("temp").innerHTML = temp;
+      document.getElementById("humidity").innerHTML = humidity;
+      document.getElementById("precipitation").innerHTML = precipitation;
 
-    document.getElementById('todays-weather')
+      document.getElementById('todays-weather');
 
-})
-.catch(function (error) {
-    console.error(error); // Handle errors
-});
+    })
+    .catch(function (error) {
+      console.error(error); // Handle errors
+    });
 
 
 
 }
 
-async function get_marketSummary(){
+async function get_marketSummary() {
   let table = document.getElementById('market-summary');
-  url='http://127.0.0.1:5000/market_summary'
+  url = 'http://127.0.0.1:5000/market_summary';
 
-  response=await axios.get(url)
-  .then(function (response) {
+  response = await axios.get(url)
+    .then(function (response) {
 
-for(let item of response.data){
-  var row = table.insertRow();
+      for (let item of response.data) {
+        var row = table.insertRow();
 
-  var cell1 = row.insertCell(0);
-  var cell2 = row.insertCell(1);
-  var cell3 = row.insertCell(2);
-  var cell4 = row.insertCell(3);
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        var cell3 = row.insertCell(2);
+        var cell4 = row.insertCell(3);
 
-  if(item.longName){
-    cell1.innerHTML = item.longName;
+        if (item.longName) {
+          cell1.innerHTML = item.longName;
 
-  } else {
-    cell1.innerHTML = item.shortName;
-  }
-  cell2.innerHTML=item.regularMarketPrice.fmt
-  cell3.innerHTML=item.regularMarketChange.fmt
-  cell4.innerHTML=item.regularMarketChangePercent.fmt
-
-
-  }
-
-})
-
-// add listener to reload
-}
-
-async function get_news(){
-let headlines=document.getElementById('news')
-  url='http://127.0.0.1:5000/us_news'
-  await axios.get(url)
-  .then(function (response) {
-
-    response.data.news.forEach(story => {
-      const row = document.createElement('div');
-      row.classList.add('news-row');
-
-      const link = document.createElement('a');
-      link.href = story.link;
-      link.textContent = story.title;
-      link.target = "_blank"; // Open in new tab
-
-      row.appendChild(link);
-      headlines.appendChild(row);
-  });
-
-})
-.catch(function (error) {
-    console.error(error); // Handle errors
-});
-
-}
-async function jokeMe(){
-  url='http://127.0.0.1:5000/joke'
-let joke=document.getElementById('joke')
-  await axios.get(url)
-  .then(function (response) {
-    joke.innerHTML=response.data
+        } else {
+          cell1.innerHTML = item.shortName;
+        }
+        cell2.innerHTML = item.regularMarketPrice.fmt;
+        cell3.innerHTML = item.regularMarketChange.fmt;
+        cell4.innerHTML = item.regularMarketChangePercent.fmt;
 
 
-})
-}
-
-const joker=document.getElementById('joke-me')
-
-joker.addEventListener('click',jokeMe)
-
-
-
-
-async function getEcoNums(){
-  url='http://127.0.0.1:5000/economic_data'
-let econTable=document.getElementById('ecoStats')
-  await axios.get(url)
-  .then(function (response) {
-
-    for (let item in response.data) {
-
-          // Create a new row
-          const row = document.createElement('tr');
-
-          // Create the first cell for the indicator name
-          const nameCell = document.createElement('td');
-          nameCell.textContent = item;
-          row.appendChild(nameCell);
-
-          // Create the second cell for the indicator value
-          const valueCell = document.createElement('td');
-          valueCell.textContent = response.data[item];
-          row.appendChild(valueCell);
-
-          // Append the new row to the table
-          econTable.appendChild(row);
       }
-  })
+
+    });
+
+  // add listener to reload
+}
+
+async function get_news() {
+  let headlines = document.getElementById('news');
+  url = 'http://127.0.0.1:5000/us_news';
+  await axios.get(url)
+    .then(function (response) {
+
+      response.data.news.forEach(story => {
+        const row = document.createElement('div');
+        row.classList.add('news-row');
+
+        const link = document.createElement('a');
+        link.href = story.link;
+        link.textContent = story.title;
+        link.target = "_blank"; // Open in new tab
+
+        row.appendChild(link);
+        headlines.appendChild(row);
+      });
+
+    })
+    .catch(function (error) {
+      console.error(error); // Handle errors
+    });
+
+}
+async function jokeMe() {
+  url = 'http://127.0.0.1:5000/joke';
+  let joke = document.getElementById('joke');
+  await axios.get(url)
+    .then(function (response) {
+      joke.innerHTML = response.data;
+
+
+    });
+}
+
+const joker = document.getElementById('joke-me');
+
+joker.addEventListener('click', jokeMe);
 
 
 
-    }
-async function get_econ_calendar(){
-  url ='http://127.0.0.1:5000/calendar'
 
-  response= await axios.get(url)
-  display_econ_calendar(response)
+async function getEcoNums() {
+  url = 'http://127.0.0.1:5000/economic_data';
+  let econTable = document.getElementById('ecoStats');
+  await axios.get(url)
+    .then(function (response) {
+
+      for (let item in response.data) {
+
+        // Create a new row
+        const row = document.createElement('tr');
+
+        // Create the first cell for the indicator name
+        const nameCell = document.createElement('td');
+        nameCell.textContent = item;
+        row.appendChild(nameCell);
+
+        // Create the second cell for the indicator value
+        const valueCell = document.createElement('td');
+        valueCell.textContent = response.data[item];
+        row.appendChild(valueCell);
+
+        // Append the new row to the table
+        econTable.appendChild(row);
+      }
+    });
+
+
+
+}
+async function get_econ_calendar() {
+  url = 'http://127.0.0.1:5000/calendar';
+
+  response = await axios.get(url);
+  display_econ_calendar(response);
 }
 
 function display_econ_calendar(data) {
-  const container=document.getElementById('econ-calendar')
+  const container = document.getElementById('econ-calendar');
   const table = document.getElementById('eco-releases');
-  data.data.map((el)=>{
+  data.data.map((el) => {
     for (const [key, value] of Object.entries(el)) {
 
-    console.log('key',key,'value',value)
-    const row = document.createElement('tr')
-    const keyCell = document.createElement('td');
-    keyCell.textContent = key
-    row.append(keyCell);
-    const valueCell = document.createElement('td');
-            if (el.value !== 'NA') {
-                const link = document.createElement('a');
-                link.href = value;
-                link.textContent = value;
-                valueCell.append(link);
-            } else {
-                valueCell.textContent = 'NA';
-            }
-            row.append(valueCell);
-            table.appendChild(row);
+      console.log('key', key, 'value', value);
+      const row = document.createElement('tr');
+      const keyCell = document.createElement('td');
+      keyCell.textContent = key;
+      row.append(keyCell);
+      const valueCell = document.createElement('td');
+      if (el.value !== 'NA') {
+        const link = document.createElement('a');
+        link.href = value;
+        link.textContent = value;
+        valueCell.append(link);
+      } else {
+        valueCell.textContent = 'NA';
+      }
+      row.append(valueCell);
+      table.appendChild(row);
 
-          }
+    }
   });
   container.appendChild(table);
 
