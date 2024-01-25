@@ -255,3 +255,24 @@ def add_ticker_to_db():
     db.session.commit()
 
     return 'Entries added to watchlist', 200
+
+
+@app.route('/delete_ticker/<ticker>', methods=['POST'])
+def delete_ticker_from_db(ticker):
+   
+
+
+    # data = request.get_json()
+    # ticker = data.get('ticker_code')
+
+    # Find the ticker by id
+    ticker_to_delete = Watchlist.query.filter_by(ticker_code=ticker).first()
+
+
+    if ticker_to_delete:
+        # Delete the ticker from the database
+        db.session.delete(ticker_to_delete)
+        db.session.commit()
+        return jsonify({'message': 'Ticker deleted successfully'}), 200
+    else:
+        return jsonify({'error': 'Ticker not found'}), 404

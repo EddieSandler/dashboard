@@ -169,6 +169,7 @@ function removeTickerFromDOMAndLocalStorage(row, ticker) {
   watchlist = watchlist.filter(symbol => symbol !== ticker);
   sessionStorage.setItem('watchlist', JSON.stringify(watchlist));
   console.log('remove', row, ticker);
+  removeTickerFromDb(ticker)
 
 
   // need to send  DELETE ticker to backend
@@ -224,6 +225,29 @@ async function addTickerToDatabase(ticker, tickerName, tickerType, userId) {
   // console.log(response)
   return console.log('done');
 }
+
+
+async function removeTickerFromDb(ticker){
+
+  let url = `http://127.0.0.1:5000/delete_ticker/${ticker}`;
+
+
+  let response = await axios.post(url)
+    .then(response => {
+      console.log('Response from server:', response);
+    });
+  // console.log(response)
+  return console.log('done');
+
+
+
+}
+
+
+
+
+
+
 
 
 window.addEventListener('beforeunload', function () {
