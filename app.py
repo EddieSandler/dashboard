@@ -31,6 +31,7 @@ CORS(app)
 app.config['SECRET_KEY'] = "never-tell!"
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///econ_dashboard'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS']=False
 app.config['SECRET_KEY'] = 'your_secret_key'
 db.init_app(app)
 app.app_context().push()
@@ -104,16 +105,6 @@ def get_link(id):
     my_dict={}
 
 
-    # for item in data['releases'][0]['link'],data['releases'][0]['name']
-    # for item in data['releases']:
-    #     if 'link' not in item:
-    #         my_dict[item['name']]='NA'
-    #         print([item['name']])
-
-    #     else:
-    #         print(item['name'],item['link'])
-    #         my_dict[item['name']]=item['link']
-    # print('my dict',my_dict)
     for item in data['releases']:
         name = item['name']
         link = item.get('link', 'NA')
@@ -206,20 +197,11 @@ def get_weather(city):
     weather=response.json()
     print(response)
     # degree_symbol = '\u00B0'
-    # current_temp=round(weather['main']['temp'])
-    # high_temp= round(weather['main']['temp_max'])
-    # low_temp=round(weather['main']['temp_min'])
-    # humidity=round(weather['main']['humidity'])
 
-    # print('Weather in ',city)
-    # print('Current Temp: ',current_temp,degree_symbol)
-    # print('High: ',high_temp,degree_symbol)
-    # print('Low: ',low_temp,degree_symbol)
-    # print('Humidity: ',humidity,'%')
 
     return weather
 
-    # return render_template('weather.html',temp=current_temp)
+
 
 @app.route('/quote/<symbol>')
 def get_quote(symbol):
@@ -250,8 +232,8 @@ def register():
         )
         db.session.add(new_user)
         db.session.commit()
-        print("New User:", new_user)
-        print("New User ID:", new_user.id)
+
+        print("User ID:", new_user.id)
 
         # Assuming new_user now has a 'user_id' attribute after being committed
         return render_template('dashboard.html', userId=new_user.id)
@@ -259,7 +241,7 @@ def register():
     return render_template('login.html', form=form)
 
 
-@app.route('/send_ticker',methods=['GET','POST'])
+@app.route('/add_ticker',methods=['GET','POST'])
 def add_ticker_to_db():
     data = request.get_json()
     new_entry = Watchlist(

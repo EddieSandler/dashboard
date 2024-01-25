@@ -214,7 +214,7 @@ async function addTickerToDatabase(ticker, tickerName, tickerType, userId) {
     "user_id": userId
 
   };
-  let url = 'http://127.0.0.1:5000/send_ticker';
+  let url = 'http://127.0.0.1:5000/add_ticker';
 
 
   let response = await axios.post(url, params)
@@ -410,6 +410,7 @@ function display_econ_calendar(data) {
         const link = document.createElement('a');
         link.href = value;
         link.textContent = value;
+        link.target = "_blank";
         valueCell.append(link);
       } else {
         valueCell.textContent = 'NA';
