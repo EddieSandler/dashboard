@@ -1,8 +1,8 @@
 let watchlistButtonClickListener;
-// let watchlist = JSON.parse(sessionStorage.getItem('watchlist')) || [];
+let watchlist = JSON.parse(sessionStorage.getItem('watchlist')) || [];
 const userId = document.getElementById('userId').textContent;
-let watchlist=getWatchlist(userId)
-console.log('the watchlist is: ',watchlist)
+
+
 // console.log(userId);
 //.getAttribute('data-user-id');
 // console.log(userId);
@@ -76,6 +76,7 @@ function displayQuote(response, ticker) {
 
 
 function addToWatchlist(data, ticker) {
+  console.log('watchlist is ',watchlist)
 
   if (watchlist.includes(ticker)) {
     alert('already in watchlist');
@@ -85,7 +86,7 @@ function addToWatchlist(data, ticker) {
     return;
   } else {
     watchlist.push(ticker);
-    localStorage.setItem('watchlist', JSON.stringify(watchlist));
+    console.log('watchlist is now',watchlist)
 
 
 
@@ -174,7 +175,7 @@ function removeTickerFromDOMAndLocalStorage(row, ticker) {
   removeTickerFromDb(ticker)
 
 
-  // need to send  DELETE ticker to backend
+
 
 }
 
@@ -197,13 +198,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
 });
 
 
-function updateWatchlist(watchlist) {
+async function updateWatchlist(watchlist) {
 
   let url = 'http://127.0.0.1:0500/update_watchlist';
-  axios.post(url, watchlist)
+  response= await axios.post(url, watchlist)
     .then(response => {
       console.log('Response from server:', response.data);
     });
+    return response.data
 
 }
 
@@ -249,12 +251,15 @@ async function removeTickerFromDb(ticker){
 
 
 
+window.addEventListener('load',getWatchlist(userId))
+  // Your code goes here
 
 
 
-window.addEventListener('beforeunload', function () {
-  localStorage.clear();
-});
+
+// window.addEventListener('beforeunload', function () {
+//   localStorage.clear();
+// });
 
 
 
@@ -456,7 +461,11 @@ async function getWatchlist(id){
 
 
   let response = await axios.get(url);
-  return response.data
+  console.log('user id is' ,id)
+  console.log('getWatchlist returns: ',response.data)
+  const watchlist=response.data
+
+  return watchlist
 
 
 

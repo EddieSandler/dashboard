@@ -295,7 +295,7 @@ def retrieve_watchlist(id):
 
 
 
-@app.route('/update_watchlist',methods=['POST'])
+@app.route('/update_watchlist/')
 def update_watchlist():
     data = request.json
 
