@@ -1,9 +1,11 @@
 let watchlistButtonClickListener;
-let watchlist = JSON.parse(sessionStorage.getItem('watchlist')) || [];
+// let watchlist = JSON.parse(sessionStorage.getItem('watchlist')) || [];
 const userId = document.getElementById('userId').textContent;
-console.log(userId);
+let watchlist=getWatchlist(userId)
+console.log('the watchlist is: ',watchlist)
+// console.log(userId);
 //.getAttribute('data-user-id');
-console.log(userId);
+// console.log(userId);
 
 // localStorage.setItem('user', JSON.stringify(userId));
 
@@ -197,7 +199,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
 function updateWatchlist(watchlist) {
 
-  let url = 'http://127.0.0.1:5000/update_watchlist';
+  let url = 'http://127.0.0.1:0500/update_watchlist';
   axios.post(url, watchlist)
     .then(response => {
       console.log('Response from server:', response.data);
@@ -445,6 +447,18 @@ function display_econ_calendar(data) {
     }
   });
   container.appendChild(table);
+
+}
+
+
+async function getWatchlist(id){
+  url = `http://127.0.0.1:5000/get_watchlist/${id}`
+
+
+  let response = await axios.get(url);
+  return response.data
+
+
 
 }
 

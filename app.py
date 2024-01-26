@@ -6,7 +6,7 @@ from openai import OpenAI
 from urllib.parse import quote
 from flask_cors import CORS
 from flask import Flask, request, render_template, jsonify,redirect, url_for,flash, session
-from secret import OPENAI_API_KEY,FRED_API_KEY,JOKE_API_KEY,WEATHER_API_KEY
+from secret import OPENAI_API_KEY,FRED_API_KEY,WEATHER_API_KEY
 from models import db, User, Watchlist # Import the models
 from forms import UserForm # Import the form
 import datetime
@@ -33,6 +33,7 @@ app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///econ_dashboard'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS']=False
 app.config['SECRET_KEY'] = 'your_secret_key'
+
 db.init_app(app)
 app.app_context().push()
 
@@ -210,14 +211,7 @@ def get_quote(symbol):
     return jsonify(data)  # Convert to JSON response
 
 
-@app.route('/update_watchlist',methods=['POST'])
-def update_watchlist():
-    data = request.json
 
-    tickers = yq.Ticker(data)
-    prices = tickers.price
-    print(jsonify(prices))
-    return prices
 
 @app.route('/register',methods=['GET','POST'])
 def register():
@@ -234,6 +228,13 @@ def register():
         db.session.commit()
 
         print("User ID:", new_user.id)
+        session['id']=new_user.id
+        print('here is session: ',session['id'])
+        if 'id' in session:
+            print("User ID is in session.")
+    # You can then access the user_id with session['user_id']
+        else:
+            print("User ID is not in session.")
 
         # Assuming new_user now has a 'user_id' attribute after being committed
         return render_template('dashboard.html', userId=new_user.id)
@@ -259,11 +260,8 @@ def add_ticker_to_db():
 
 @app.route('/delete_ticker/<ticker>', methods=['POST'])
 def delete_ticker_from_db(ticker):
-   
 
 
-    # data = request.get_json()
-    # ticker = data.get('ticker_code')
 
     # Find the ticker by id
     ticker_to_delete = Watchlist.query.filter_by(ticker_code=ticker).first()
@@ -276,3 +274,32 @@ def delete_ticker_from_db(ticker):
         return jsonify({'message': 'Ticker deleted successfully'}), 200
     else:
         return jsonify({'error': 'Ticker not found'}), 404
+
+
+
+@app.route('/get_watchlist/<id>')
+def retrieve_watchlist(id):
+
+    ticker_codes = Watchlist.query.filter(Watchlist.user_id == id).with_entities(Watchlist.ticker_code).all()
+    ticker_code_list = [ticker_code[0] for ticker_code in ticker_codes]
+    response=jsonify(ticker_code_list)
+
+    print('here is the list ',response)
+
+
+
+
+    return response
+
+
+
+
+
+@app.route('/update_watchlist',methods=['POST'])
+def update_watchlist():
+    data = request.json
+
+    tickers = yq.Ticker(data)
+    prices = tickers.price
+    print(jsonify(prices))
+    return prices
