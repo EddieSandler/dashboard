@@ -295,11 +295,17 @@ def retrieve_watchlist(id):
 
 
 
-@app.route('/update_watchlist/')
+@app.route('/update_watchlist/',methods=['POST'])
 def update_watchlist():
     data = request.json
+    ticker_list=data['watchlist']
 
-    tickers = yq.Ticker(data)
+
+
+
+
+
+    tickers = yq.Ticker(ticker_list)
     prices = tickers.price
-    print(jsonify(prices))
+
     return prices

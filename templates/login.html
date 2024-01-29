@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+    <!-- Add any additional CSS or JS links here -->
+</head>
+<body>
+    <h1>Register</h1>
+    <form method="POST" action="{{ url_for('register') }}">
+        {{ form.hidden_tag() }}
+
+        <div>
+            <label for="first_name">First Name:</label>
+            {{ form.first_name(id="first_name") }}
+            {% for error in form.first_name.errors %}
+                <span style="color: red;">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <div>
+            <label for="last_name">Last Name:</label>
+            {{ form.last_name(id="last_name") }}
+            {% for error in form.last_name.errors %}
+                <span style="color: red;">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+         <div>
+            <label for="login_id">Login ID:</label>
+            {{ form.login_id(id="login_id") }}
+            {% for error in form.login_id.errors %}
+                <span style="color: red;">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        
+        <div>
+            <label for="horoscope_sign">Horoscope Sign:</label>
+            {{ form.horoscope_sign(id="horoscope_sign") }}
+            {% for error in form.horoscope_sign.errors %}
+                <span style="color: red;">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <div>
+            <label for="city">City:</label>
+            {{ form.city(id="city") }}
+            {% for error in form.city.errors %}
+                <span style="color: red;">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <div>
+            {{ form.submit() }}
+        </div>
+    </form>
+</body>
+</html>

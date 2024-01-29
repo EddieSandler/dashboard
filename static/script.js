@@ -1,5 +1,6 @@
 let watchlistButtonClickListener;
-let watchlist = JSON.parse(sessionStorage.getItem('watchlist')) || [];
+// let watchlist = JSON.parse(sessionStorage.getItem('watchlist')) || [];
+let watchlist = [];
 const userId = document.getElementById('userId').textContent;
 
 
@@ -37,16 +38,16 @@ async function retrieveQuote() {
 function displayQuote(response, ticker) {
 
   const displayContainer = document.getElementById('quote-section');
- document.getElementById('symbolField').textContent = ticker;
-  price=document.getElementById("priceField")
+  document.getElementById('symbolField').textContent = ticker;
+  price = document.getElementById("priceField");
   price.textContent = response.data.regularMarketPrice;
-  changeD=document.getElementById('changeField')
+  changeD = document.getElementById('changeField');
   changeD.textContent = response.data.regularMarketChange;
-  changeP=document.getElementById('Pctchange')
+  changeP = document.getElementById('Pctchange');
   changeP.textContent = response.data.regularMarketChangePercent;
   document.getElementById('nameField').textContent = response.data.shortName;
 
-  if (response.data.regularMarketChange>0) {
+  if (response.data.regularMarketChange > 0) {
     price.className = 'positive';
     changeD.className = 'positive';
     changeP.className = 'positive';
@@ -76,7 +77,7 @@ function displayQuote(response, ticker) {
 
 
 function addToWatchlist(data, ticker) {
-  console.log('watchlist is ',watchlist)
+  console.log('watchlist is ', watchlist);
 
   if (watchlist.includes(ticker)) {
     alert('already in watchlist');
@@ -86,7 +87,7 @@ function addToWatchlist(data, ticker) {
     return;
   } else {
     watchlist.push(ticker);
-    console.log('watchlist is now',watchlist)
+    console.log('watchlist is now', watchlist);
 
 
 
@@ -100,6 +101,8 @@ function displayQuoteInWatchlist(ticker, data) {
   const row = document.createElement('tr');
   const symbolCell = document.createElement('td');
   symbolCell.textContent = ticker;
+  symbolCell.id = ticker;
+  console.log('element id is: ',symbolCell.id)
   row.appendChild(symbolCell);
 
   const priceCell = document.createElement('td');
@@ -152,27 +155,27 @@ function displayQuoteInWatchlist(ticker, data) {
 
 
 
-document.addEventListener('DOMContentLoaded', (event) => {
-  // Select the button by its ID
-  const quoteButton = document.getElementById('quote');
+// document.addEventListener('DOMContentLoaded', (event) => {
+//   // Select the button by its ID
+//   const quoteButton = document.getElementById('quote');
 
-  // Add click event listener to the button
-  quoteButton.addEventListener('click', (event) => {
-    // Prevent the default action of the event (e.g., form submission)
-    event.preventDefault();
+//   // Add click event listener to the button
+//   quoteButton.addEventListener('click', (event) => {
+//     // Prevent the default action of the event (e.g., form submission)
+//     event.preventDefault();
 
-    // Call the validateTicker function
-    retrieveQuote();
-  });
-});
+//     // Call the validateTicker function
+//     retrieveQuote();
+//   });
+// });
 
 
 function removeTickerFromDOMAndLocalStorage(row, ticker) {
   row.parentNode.removeChild(row);
   watchlist = watchlist.filter(symbol => symbol !== ticker);
-  sessionStorage.setItem('watchlist', JSON.stringify(watchlist));
+  // sessionStorage.setItem('watchlist', JSON.stringify(watchlist));
   console.log('remove', row, ticker);
-  removeTickerFromDb(ticker)
+  removeTickerFromDb(ticker);
 
 
 
@@ -198,16 +201,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
 });
 
 
-async function updateWatchlist(watchlist) {
 
-  let url = 'http://127.0.0.1:0500/update_watchlist';
-  response= await axios.post(url, watchlist)
-    .then(response => {
-      console.log('Response from server:', response.data);
-    });
-    return response.data
 
-}
+
 
 async function addTickerToDatabase(ticker, tickerName, tickerType, userId) {
   let params =
@@ -221,17 +217,17 @@ async function addTickerToDatabase(ticker, tickerName, tickerType, userId) {
   };
   let url = 'http://127.0.0.1:5000/add_ticker';
 
-
+  //if ticker is NOT in Database - make the api call else return 0
   let response = await axios.post(url, params)
     .then(response => {
       console.log('Response from server:', response);
     });
   // console.log(response)
-  return console.log('done');
+  // return response;
 }
 
 
-async function removeTickerFromDb(ticker){
+async function removeTickerFromDb(ticker) {
 
   let url = `http://127.0.0.1:5000/delete_ticker/${ticker}`;
 
@@ -246,20 +242,6 @@ async function removeTickerFromDb(ticker){
 
 
 }
-
-
-
-
-
-window.addEventListener('load',getWatchlist(userId))
-  // Your code goes here
-
-
-
-
-// window.addEventListener('beforeunload', function () {
-//   localStorage.clear();
-// });
 
 
 
@@ -456,16 +438,18 @@ function display_econ_calendar(data) {
 }
 
 
-async function getWatchlist(id){
-  url = `http://127.0.0.1:5000/get_watchlist/${id}`
+async function getWatchlist(id) {
+
+
+  url = `http://127.0.0.1:5000/get_watchlist/${id}`;
 
 
   let response = await axios.get(url);
-  console.log('user id is' ,id)
-  console.log('getWatchlist returns: ',response.data)
-  const watchlist=response.data
+  console.log('user id is', id);
+  console.log('getWatchlist returns: ', response.data);
+  watchlist = response.data;
 
-  return watchlist
+  return watchlist;
 
 
 
@@ -474,16 +458,51 @@ async function getWatchlist(id){
 
 
 
+window.addEventListener('load', getWatchlist(userId));
+
+
+async function refreshWatchlist(watchlist) {
+  console.log('sending to update', watchlist);
+
+  let url = 'http://127.0.0.1:5000/update_watchlist/';
+  try {
+    const response = await axios.post(url, { watchlist: watchlist });
+    console.log('Response from server:', response);
+    for(let item in response){
+      console.log('id is ',item.id)
+      console.log('data: ',item['regularMarketPrice'])
+    }
+    for (let item of watchlist) console.log(item)
+
+  }
+  catch (error) {
+    console.error('Error while sending data:', error);
+    // Handle error appropriately. Maybe return null or a custom error object.
+    return null;
+  }
+}
+
+
+//create function to  replace watchlist in DOM with the refreshed watchlist
+// get ticker and watchlist from refreshWatchlist
+//assign a ticker  id to each element
 
 
 
+document.addEventListener('DOMContentLoaded', async () => {
+  // Initialize event listeners and fetch initial data
+  document.getElementById('quote').addEventListener('click', retrieveQuote);
+  document.getElementById('zodiac-signs').addEventListener('change', fetchHoroscope);
+  document.getElementById('btn-city').addEventListener('click', getWeather);
+  document.getElementById('joke-me').addEventListener('click', fetchJoke);
 
-
-
-
-
-
-
+  // Fetch initial data for various sections
+  await getWatchlist(userId);
+  await get_marketSummary();
+  await get_news();
+  await getEcoNums();
+  await get_econ_calendar();
+});
 
 
 
