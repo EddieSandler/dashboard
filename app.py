@@ -7,8 +7,8 @@ from urllib.parse import quote
 from flask_cors import CORS
 from flask import Flask, request, render_template, jsonify,redirect, url_for,flash, session
 from secret import OPENAI_API_KEY,FRED_API_KEY,WEATHER_API_KEY
-from models import db, User, Watchlist # Import the models
-from forms import UserForm # Import the form
+from models import db, User # Import the models
+from forms import RegisterForm,LoginForm # Import the form
 import datetime
 from flask_sqlalchemy import SQLAlchemy
 
@@ -42,11 +42,93 @@ app.app_context().push()
 db.create_all()
 
 
+@app.route("/")
+def homepage():
+    """Show homepage with links to site areas."""
+
+    return render_template("index.html")
 
 
-@app.route('/')
-def show_login():
-    return redirect('/register')
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    """Register user: produce form & handle form submission."""
+
+    form = RegisterForm()
+
+    if  form.is_submitted() and form.validate() :
+        name = form.username.data
+        pwd = form.password.data
+
+        try:
+            user = User.register(name, pwd)
+            db.session.add(user)
+            db.session.commit()
+            session["user_id"] = user.id
+            return redirect("/secret")
+        except:
+            db.session.rollback()  # Important to roll back the session
+            flash('That username is already taken. Please choose a different one.')
+            return redirect('/')
+
+
+
+    else:
+        return render_template("register.html", form=form)
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    """Produce login form or handle login."""
+
+    form = LoginForm()
+
+    if  form.is_submitted() and form.validate() :
+        name = form.username.data
+        pwd = form.password.data
+
+        # authenticate will return a user or False
+        user = User.authenticate(name, pwd)
+
+        if user:
+            session["user_id"] = user.id  # keep logged in
+            return render_template('dashboard.html')
+
+        else:
+            form.username.errors = ["Bad name/password"]
+
+    return render_template("login.html", form=form)
+# end-login
+
+
+@app.route("/secret")
+def secret():
+    """Example hidden page for logged-in users only."""
+
+    if "user_id" not in session:
+        flash("You must be logged in to view!")
+        return redirect("/")
+
+        # alternatively, can return HTTP Unauthorized status:
+        #
+        # from werkzeug.exceptions import Unauthorized
+        # raise Unauthorized()
+
+    else:
+        return render_template("dashboard.html")
+
+
+@app.route("/logout")
+def logout():
+    """Logs user out and redirects to homepage."""
+
+    session.pop("user_id")
+
+    return redirect("/")
+
+
+# @app.route('/')
+# def show_login():
+#     return redirect('/register')
 
 @app.route('/market_summary')
 def get_market_summary():
@@ -213,49 +295,65 @@ def get_quote(symbol):
 
 
 
-@app.route('/register',methods=['GET','POST'])
-def register():
-    form = UserForm()
-    if form.validate_on_submit():
-        new_user = User(
-            first_name=form.first_name.data,
-            last_name=form.last_name.data,
-            login_id=form.login_id.data,
-            horoscope_sign=form.horoscope_sign.data,
-            city=form.city.data
-        )
-        db.session.add(new_user)
-        db.session.commit()
+# @app.route('/register',methods=['GET','POST'])
+# def register():
+#     form = UserForm()
+#     if form.is_submitted() and form.validate():
+#         new_user = User(
+#             first_name=form.first_name.data,
+#             last_name=form.last_name.data,
+#             login_id=form.login_id.data,
+#             horoscope_sign=form.horoscope_sign.data,
+#             city=form.city.data
+#         )
+#         db.session.add(new_user)
+#         db.session.commit()
 
-        print("User ID:", new_user.id)
-        session['id']=new_user.id
-        print('here is session: ',session['id'])
-        if 'id' in session:
-            print("User ID is in session.")
-    # You can then access the user_id with session['user_id']
-        else:
-            print("User ID is not in session.")
-
-        # Assuming new_user now has a 'user_id' attribute after being committed
-        return render_template('dashboard.html', userId=new_user.id)
-
-    return render_template('login.html', form=form)
+#         print("User ID:", new_user.id)
+#         session['id']=new_user.id
 
 
-@app.route('/add_ticker',methods=['GET','POST'])
-def add_ticker_to_db():
-    data = request.get_json()
-    new_entry = Watchlist(
-            ticker_code=data['ticker_code'],
-            ticker_name=data['ticker_name'],
-            ticker_type=data['ticker_type'],
-            user_id=data['user_id']
-        )
-    db.session.add(new_entry)
+#         # Assuming new_user now has a 'user_id' attribute after being committed
+#         return render_template('dashboard3.html', userId=new_user.id)
 
-    db.session.commit()
+#     return render_template('register.html', form=form)
 
-    return 'Entries added to watchlist', 200
+# @app.route("/login", methods=["GET", "POST"])
+# def login():
+#     """Produce login form or handle login."""
+
+#     form = LoginForm()
+
+#     if  form.is_submitted() and form.validate() :
+#         name = form.username.data
+#         pwd = form.password.data
+
+#         # authenticate will return a user or False
+#         user = User.authenticate(name, pwd)
+
+#         if user:
+#             session["user_id"] = user.id  # keep logged in
+#             return redirect("/secret")
+
+#         else:
+#             form.username.errors = ["Bad name/password"]
+
+#     return render_template("login.html", form=form)
+
+# @app.route('/add_ticker',methods=['GET','POST'])
+# def add_ticker_to_db():
+#     data = request.get_json()
+#     new_entry = Watchlist(
+#             ticker_code=data['ticker_code'],
+#             ticker_name=data['ticker_name'],
+#             ticker_type=data['ticker_type'],
+#             user_id=data['user_id']
+#         )
+#     db.session.add(new_entry)
+
+#     db.session.commit()
+
+#     return 'Entries added to watchlist', 200
 
 
 @app.route('/delete_ticker/<ticker>', methods=['POST'])

@@ -1,12 +1,17 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
-from wtforms.validators import DataRequired, Length
+from wtforms import StringField, PasswordField
+from wtforms.validators import InputRequired
 
-class UserForm(FlaskForm):
-    first_name = StringField('First Name', validators=[DataRequired(), Length(max=50)])
-    last_name = StringField('Last Name', validators=[DataRequired(), Length(max=50)])
-    login_id = StringField('Login ID', validators=[DataRequired(), Length(max=50)])
 
-    horoscope_sign = StringField('Horoscope Sign', validators=[Length(max=50)])
-    city = StringField('City', validators=[Length(max=50)])
-    submit = SubmitField('Register')
+class RegisterForm(FlaskForm):
+    """Form for registering a user."""
+
+    username = StringField("Username", validators=[InputRequired()])
+    password = PasswordField("Password", validators=[InputRequired()])
+
+
+class LoginForm(FlaskForm):
+    """Form for registering a user."""
+
+    username = StringField("Username", validators=[InputRequired()])
+    password = PasswordField("Password", validators=[InputRequired()])

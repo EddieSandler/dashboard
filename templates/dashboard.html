@@ -8,6 +8,7 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </head>
 <body>
+    <a href="{{ url_for('logout') }}">Logout</a>
     <div id="userId" style="display:none;"> {{userId}}</div>
     <div class="dashboard">
         <div class="header">
@@ -160,5 +161,6 @@
 
 
 </div>
-           <script src="/static/script.js" defer></script></body>
+           <script src="/static/script.js" defer></script>
+        </body>
 </html>
