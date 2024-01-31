@@ -29,6 +29,7 @@ class User(db.Model):
 
     password = db.Column(db.Text,
                          nullable=False)
+    watchlist = db.relationship('Watchlist', backref='user', lazy=True)
 
     # start_register
     @classmethod
@@ -59,10 +60,11 @@ class User(db.Model):
         else:
             return False
     # end_authenticate
-# class Watchlist(db.Model):
-#     __tablename__ = 'watchlist'
-#     ticker_id = db.Column(db.Integer, primary_key=True)
-#     ticker_code = db.Column(db.String(10), nullable=False)
-#     ticker_name = db.Column(db.String(50), nullable=False)
-#     ticker_type = db.Column(db.String(50), nullable=False)
-#     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+class Watchlist(db.Model):
+    __tablename__ = 'watchlist'
+    ticker_id = db.Column(db.Integer,autoincrement=True, primary_key=True)
+    ticker_code = db.Column(db.String(10), nullable=False)
+    ticker_name = db.Column(db.String(50))
+    ticker_type = db.Column(db.String(50))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    __table_args__ = (db.UniqueConstraint('user_id', 'ticker_code', name='_user_ticker_uc'),)
