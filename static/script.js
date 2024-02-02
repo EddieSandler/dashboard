@@ -1,14 +1,13 @@
 let watchlistButtonClickListener;
 // let watchlist = JSON.parse(sessionStorage.getItem('watchlist')) || [];
-let watchlist = document.getElementById('watchlist');
 
 let userId = document.getElementById('userId')
-userId=parseInt(userId.innerText);
-let name= document.getElementById('name')
 BASE_URL='http://127.0.0.1:5000'
 
 
-
+userId=parseInt(userId.innerText);
+//.getAttribute('data-user-id');
+// console.log(userId);
 
 // localStorage.setItem('user', JSON.stringify(userId));
 
@@ -82,7 +81,7 @@ function displayQuote(response, ticker) {
 async function addToWatchlist(data, ticker) {
 
   url=`${BASE_URL}/watchlist`
-
+  console.log('watchlist is ', watchlist);
   let params =
   {
     "user_id": userId,
@@ -90,12 +89,26 @@ async function addToWatchlist(data, ticker) {
   };
   let response = await axios.post(url, params)
   .then(response => {
-    console.log('Response from server:',response)
-
-  displayQuoteInWatchlist(ticker, data);
+    console.log('Response from server:', response);
   });
 
-};
+
+  // if (watchlist.includes(ticker)) {
+  //   alert('already in watchlist');
+  //   const watchlistButton = document.getElementById('add');
+  //   watchlistButton.removeEventListener('click', watchlistButtonClickListener);
+
+  //   return;
+  // } else {
+  //   watchlist.push(ticker);
+  //   console.log('watchlist is now', watchlist);
+
+
+
+  //   return displayQuoteInWatchlist(ticker, data);
+  // }
+
+}
 
 function displayQuoteInWatchlist(ticker, data) {
   let table = document.getElementById('watchlist-table');
@@ -459,7 +472,7 @@ async function getWatchlist(id) {
 
 
 
-// window.addEventListener('load', getWatchlist(userId));
+window.addEventListener('load', getWatchlist(userId));
 
 
 async function refreshWatchlist(watchlist) {

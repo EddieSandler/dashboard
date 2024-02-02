@@ -7,7 +7,7 @@ from urllib.parse import quote
 from flask_cors import CORS
 from flask import Flask, request, render_template, jsonify,redirect, url_for,flash, session
 from secret import OPENAI_API_KEY,FRED_API_KEY,WEATHER_API_KEY
-from models import db, User,Watchlist # Import the models
+from models import db, User # Import the models
 from forms import RegisterForm,LoginForm # Import the form
 import datetime
 from flask_sqlalchemy import SQLAlchemy
@@ -64,7 +64,7 @@ def register():
             db.session.add(user)
             db.session.commit()
             session["user_id"] = user.id
-            return redirect("/dashboard")
+            return redirect("/secret")
         except:
             db.session.rollback()  # Important to roll back the session
             flash('That username is already taken. Please choose a different one.')
@@ -91,7 +91,7 @@ def login():
 
         if user:
             session["user_id"] = user.id  # keep logged in
-            return render_template('dashboard.html',id=user.id)
+            return render_template('dashboard.html')
 
         else:
             form.username.errors = ["Bad name/password"]
@@ -100,7 +100,7 @@ def login():
 # end-login
 
 
-@app.route("/dashboard")
+@app.route("/secret")
 def secret():
     """Example hidden page for logged-in users only."""
 
@@ -108,10 +108,13 @@ def secret():
         flash("You must be logged in to view!")
         return redirect("/")
 
+        # alternatively, can return HTTP Unauthorized status:
+        #
+        # from werkzeug.exceptions import Unauthorized
+        # raise Unauthorized()
 
     else:
-
-        return render_template("dashboard.html",id=session['user_id'])
+        return render_template("dashboard.html")
 
 
 @app.route("/logout")
@@ -123,6 +126,9 @@ def logout():
     return redirect("/")
 
 
+# @app.route('/')
+# def show_login():
+#     return redirect('/register')
 
 @app.route('/market_summary')
 def get_market_summary():
@@ -286,24 +292,6 @@ def get_quote(symbol):
     data = quote.quotes[symbol]
     return jsonify(data)  # Convert to JSON response
 
-@app.route('/watchlist',methods=['POST'])
-def add_to_watchlist():
-    data = request.get_json()
-    user_id=data['user_id']
-    ticker_code=data['ticker_code']
-    existing_record = Watchlist.query.filter_by(user_id=user_id, ticker_code=ticker_code).first()
-    if existing_record:
-        print(f"{ticker_code} exists for user {user_id}")
-        # Record already exists, handle accordingly (e.g., update or skip)
-        return 'existing_record'
-    else:
-        # Insert new record
-        new_record = Watchlist(user_id=user_id, ticker_code=ticker_code)
-        db.session.add(new_record)
-        db.session.commit()
-        print('new record ',new_record)
-        return 'new_record'
-
 
 
 
@@ -352,20 +340,20 @@ def add_to_watchlist():
 
 #     return render_template("login.html", form=form)
 
-@app.route('/add_ticker',methods=['GET','POST'])
-def add_ticker_to_db():
-    data = request.get_json()
-    new_entry = Watchlist(
-            ticker_code=data['ticker_code'],
-            ticker_name=data['ticker_name'],
-            ticker_type=data['ticker_type'],
-            user_id=data['user_id']
-        )
-    db.session.add(new_entry)
+# @app.route('/add_ticker',methods=['GET','POST'])
+# def add_ticker_to_db():
+#     data = request.get_json()
+#     new_entry = Watchlist(
+#             ticker_code=data['ticker_code'],
+#             ticker_name=data['ticker_name'],
+#             ticker_type=data['ticker_type'],
+#             user_id=data['user_id']
+#         )
+#     db.session.add(new_entry)
 
-    db.session.commit()
+#     db.session.commit()
 
-    return 'Entries added to watchlist', 200
+#     return 'Entries added to watchlist', 200
 
 
 @app.route('/delete_ticker/<ticker>', methods=['POST'])
