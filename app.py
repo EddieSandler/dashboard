@@ -7,10 +7,11 @@ from urllib.parse import quote
 from flask_cors import CORS
 from flask import Flask, request, render_template, jsonify,redirect, url_for,flash, session
 from secret import OPENAI_API_KEY,FRED_API_KEY,WEATHER_API_KEY
-from models import db, User # Import the models
+from models import db, User,Watchlist # Import the models
 from forms import RegisterForm,LoginForm # Import the form
 import datetime
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.exc import IntegrityError
 
 
 
@@ -36,10 +37,10 @@ app.config['SECRET_KEY'] = 'your_secret_key'
 
 db.init_app(app)
 app.app_context().push()
-
-
-
 db.create_all()
+
+
+'''===========LOGIN and AUTHENTICATION=============='''
 
 
 @app.route("/")
@@ -64,14 +65,11 @@ def register():
             db.session.add(user)
             db.session.commit()
             session["user_id"] = user.id
-            return redirect("/secret")
-        except:
+            return redirect("/dashboard")
+        except Exception:
             db.session.rollback()  # Important to roll back the session
             flash('That username is already taken. Please choose a different one.')
             return redirect('/')
-
-
-
     else:
         return render_template("register.html", form=form)
 
@@ -91,7 +89,7 @@ def login():
 
         if user:
             session["user_id"] = user.id  # keep logged in
-            return render_template('dashboard.html')
+            return render_template('dashboard.html',id=user.id)
 
         else:
             form.username.errors = ["Bad name/password"]
@@ -100,8 +98,8 @@ def login():
 # end-login
 
 
-@app.route("/secret")
-def secret():
+@app.route("/dashboard")
+def dashboard():
     """Example hidden page for logged-in users only."""
 
     if "user_id" not in session:
@@ -124,11 +122,51 @@ def logout():
     session.pop("user_id")
 
     return redirect("/")
+'''=========================================================='''
+'''====================== QUOTES AND WATCHLIST==============='''
 
 
-# @app.route('/')
-# def show_login():
-#     return redirect('/register')
+@app.route('/quote/<symbol>')
+def get_quote(symbol):
+    quote = yq.Ticker(symbol)
+    data = quote.quotes[symbol]
+    return jsonify(data)  # Convert to JSON response
+
+
+
+@app.route('/add_ticker',methods=['POST'])
+def add_ticker_to_db():
+    data = request.get_json()
+    existing_entry = Watchlist.query.filter_by(ticker_code=data['ticker_code'], user_id=data['user_id']).first()
+    if existing_entry:
+        return "This ticker code already exists for the user.", 400
+
+        new_entry = Watchlist(
+            ticker_code=data['ticker_code'],
+            ticker_name=data['ticker_name'],
+            ticker_type=data['ticker_type'],
+            user_id=data['user_id']
+        )
+
+        db.session.add(new_entry)
+        db.session.commit()
+        return 'Entries added to watchlist', 200
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 @app.route('/market_summary')
 def get_market_summary():
@@ -286,74 +324,10 @@ def get_weather(city):
 
 
 
-@app.route('/quote/<symbol>')
-def get_quote(symbol):
-    quote = yq.Ticker(symbol)
-    data = quote.quotes[symbol]
-    return jsonify(data)  # Convert to JSON response
 
 
 
 
-# @app.route('/register',methods=['GET','POST'])
-# def register():
-#     form = UserForm()
-#     if form.is_submitted() and form.validate():
-#         new_user = User(
-#             first_name=form.first_name.data,
-#             last_name=form.last_name.data,
-#             login_id=form.login_id.data,
-#             horoscope_sign=form.horoscope_sign.data,
-#             city=form.city.data
-#         )
-#         db.session.add(new_user)
-#         db.session.commit()
-
-#         print("User ID:", new_user.id)
-#         session['id']=new_user.id
-
-
-#         # Assuming new_user now has a 'user_id' attribute after being committed
-#         return render_template('dashboard3.html', userId=new_user.id)
-
-#     return render_template('register.html', form=form)
-
-# @app.route("/login", methods=["GET", "POST"])
-# def login():
-#     """Produce login form or handle login."""
-
-#     form = LoginForm()
-
-#     if  form.is_submitted() and form.validate() :
-#         name = form.username.data
-#         pwd = form.password.data
-
-#         # authenticate will return a user or False
-#         user = User.authenticate(name, pwd)
-
-#         if user:
-#             session["user_id"] = user.id  # keep logged in
-#             return redirect("/secret")
-
-#         else:
-#             form.username.errors = ["Bad name/password"]
-
-#     return render_template("login.html", form=form)
-
-# @app.route('/add_ticker',methods=['GET','POST'])
-# def add_ticker_to_db():
-#     data = request.get_json()
-#     new_entry = Watchlist(
-#             ticker_code=data['ticker_code'],
-#             ticker_name=data['ticker_name'],
-#             ticker_type=data['ticker_type'],
-#             user_id=data['user_id']
-#         )
-#     db.session.add(new_entry)
-
-#     db.session.commit()
-
-#     return 'Entries added to watchlist', 200
 
 
 @app.route('/delete_ticker/<ticker>', methods=['POST'])

@@ -1,4 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.schema import UniqueConstraint
+
 
 from flask_bcrypt import Bcrypt
 
@@ -59,10 +61,11 @@ class User(db.Model):
         else:
             return False
     # end_authenticate
-# class Watchlist(db.Model):
-#     __tablename__ = 'watchlist'
-#     ticker_id = db.Column(db.Integer, primary_key=True)
-#     ticker_code = db.Column(db.String(10), nullable=False)
-#     ticker_name = db.Column(db.String(50), nullable=False)
-#     ticker_type = db.Column(db.String(50), nullable=False)
-#     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+class Watchlist(db.Model):
+    __tablename__ = 'watchlist'
+    ticker_id = db.Column(db.Integer, primary_key=True)
+    ticker_code = db.Column(db.String(10), nullable=False)
+    ticker_name = db.Column(db.String(50))
+    ticker_type = db.Column(db.String(50))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    __table_args__ = (UniqueConstraint('ticker_code', 'user_id', name='_user_ticker_uc'),)

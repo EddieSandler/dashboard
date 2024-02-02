@@ -2,14 +2,9 @@ let watchlistButtonClickListener;
 // let watchlist = JSON.parse(sessionStorage.getItem('watchlist')) || [];
 
 let userId = document.getElementById('userId')
+userId=parseInt(userId.innerText);
 BASE_URL='http://127.0.0.1:5000'
 
-
-userId=parseInt(userId.innerText);
-//.getAttribute('data-user-id');
-// console.log(userId);
-
-// localStorage.setItem('user', JSON.stringify(userId));
 
 
 async function retrieveQuote() {
@@ -17,7 +12,7 @@ async function retrieveQuote() {
   let user_input = document.getElementById('ticker');
   let ticker = user_input.value.toUpperCase();
 
-  if (ticker === '') {
+  if (!ticker) {
     // Handle empty input (e.g., display an alert or a warning message)
     alert('Input cannot be empty');
     return; // Stop the function if the input is empty
@@ -37,6 +32,14 @@ async function retrieveQuote() {
 
 };
 
+document.addEventListener('DOMContentLoaded', (event) => {
+  const quoteButton = document.getElementById('quote');
+   quoteButton.addEventListener('click', (event) => {
+   event.preventDefault();
+    retrieveQuote();
+});
+});
+
 function displayQuote(response, ticker) {
 
   const displayContainer = document.getElementById('quote-section');
@@ -47,7 +50,7 @@ function displayQuote(response, ticker) {
   changeD.textContent = response.data.regularMarketChange.toFixed(2);
   changeP = document.getElementById('Pctchange');
   changeP.textContent = response.data.regularMarketChangePercent.toFixed(2);
-  document.getElementById('nameField').textContent = response.data.shortName;
+  symbol=document.getElementById('nameField').textContent = response.data.shortName;
 
   if (response.data.regularMarketChange > 0) {
     price.className = 'positive';
@@ -59,58 +62,47 @@ function displayQuote(response, ticker) {
     changeP.className = 'negative';
 
   }
-
-  let ticker_type = response.data.quoteType;
   const watchlistButton = document.getElementById('add');
   watchlistButton.removeEventListener('click', watchlistButtonClickListener);
-
-  // Attach a new click event listener
-  watchlistButtonClickListener = () => addToWatchlist(response.data, ticker);
+  watchlistButtonClickListener = () => addTickerToDatabase(ticker,response);
   watchlistButton.addEventListener('click', watchlistButtonClickListener);
 
-  function handleWatchlistButtonClick(data, ticker) {
-    // Call addToWatchlist with the correct parameters
-    watchlistButton.removeEventListener('click', handleWatchlistButtonClick);
+  function handleWatchlistButtonClick(ticker,response) {
+  watchlistButton.removeEventListener('click', handleWatchlistButtonClick);
+  addTickerToDatabase(ticker,response)
 
-    addToWatchlist(data, ticker);
+  }
+}
+async function addTickerToDatabase(ticker, response) {
+  let params =
+  {
+
+    "ticker_code": ticker,
+    "ticker_name": response.data.shortName,
+    "ticker_type": response.data.quoteType,
+    "user_id": userId
+
+  };
+  console.log('adding this to db',params)
+  let url = 'http://127.0.0.1:5000/add_ticker';
+
+try {
+  let res = await axios.post(url, params)
+   displayQuoteInWatchlist(ticker,response);
+
+  } catch (error) {
+alert('Ticker Already in Watchlist')
+return
+
   }
 }
 
 
 
-async function addToWatchlist(data, ticker) {
 
-  url=`${BASE_URL}/watchlist`
-  console.log('watchlist is ', watchlist);
-  let params =
-  {
-    "user_id": userId,
-    "ticker_code": ticker,
-  };
-  let response = await axios.post(url, params)
-  .then(response => {
-    console.log('Response from server:', response);
-  });
+function displayQuoteInWatchlist(ticker,data) {
+  console.log('time to add to watchlist: ticker: ', ticker , data)
 
-
-  // if (watchlist.includes(ticker)) {
-  //   alert('already in watchlist');
-  //   const watchlistButton = document.getElementById('add');
-  //   watchlistButton.removeEventListener('click', watchlistButtonClickListener);
-
-  //   return;
-  // } else {
-  //   watchlist.push(ticker);
-  //   console.log('watchlist is now', watchlist);
-
-
-
-  //   return displayQuoteInWatchlist(ticker, data);
-  // }
-
-}
-
-function displayQuoteInWatchlist(ticker, data) {
   let table = document.getElementById('watchlist-table');
   const row = document.createElement('tr');
   const symbolCell = document.createElement('td');
@@ -120,20 +112,20 @@ function displayQuoteInWatchlist(ticker, data) {
   row.appendChild(symbolCell);
 
   const priceCell = document.createElement('td');
-  priceCell.textContent = data.regularMarketPrice;
+  priceCell.textContent = data.data.regularMarketPrice;
   row.appendChild(priceCell);
 
 
 
   const changeCell = document.createElement('td');
-  changeCell.textContent = data.regularMarketChange;
+  changeCell.textContent = data.data.regularMarketChange;
   row.appendChild(changeCell);
 
   const PctchangeCell = document.createElement('td');
-  PctchangeCell.textContent = data.regularMarketChangePercent;
+  PctchangeCell.textContent = data.data.regularMarketChangePercent;
   row.appendChild(PctchangeCell);
 
-  if (data.regularMarketChange > 0) {
+  if (data.data.regularMarketChange > 0) {
     changeCell.className = 'positive';
     priceCell.className = 'positive';
     PctchangeCell.className = 'positive';
@@ -146,7 +138,7 @@ function displayQuoteInWatchlist(ticker, data) {
 
 
   const nameCell = document.createElement('td');
-  nameCell.textContent = data.shortName;
+  nameCell.textContent = data.data.shortName;
   row.appendChild(nameCell);
 
   let removeButton = document.createElement('button');
@@ -155,44 +147,21 @@ function displayQuoteInWatchlist(ticker, data) {
   removeButton.id = 'remove';
   row.appendChild(removeButton);
   removeButton.onclick = function () {
-    removeTickerFromDOMAndLocalStorage(row, ticker);
+    removeTickerFromDOM(row, ticker);
   };
 
   table.appendChild(row);
 
 
-  addTickerToDatabase(ticker, data.shortName, data.quoteType, userId);
+  // addTickerToDatabase(ticker, data.shortName, data.quoteType, userId);
 
 
 }
 
-
-
-
-document.addEventListener('DOMContentLoaded', (event) => {
-  // Select the button by its ID
-  const quoteButton = document.getElementById('quote');
-
-  // Add click event listener to the button
-  quoteButton.addEventListener('click', (event) => {
-    // Prevent the default action of the event (e.g., form submission)
-    event.preventDefault();
-
-    // Call the validateTicker function
-    retrieveQuote();
-  });
-});
-
-
-function removeTickerFromDOMAndLocalStorage(row, ticker) {
+function removeTickerFromDOM(row, ticker) {
   row.parentNode.removeChild(row);
-  watchlist = watchlist.filter(symbol => symbol !== ticker);
-  // sessionStorage.setItem('watchlist', JSON.stringify(watchlist));
-  console.log('remove', row, ticker);
-  removeTickerFromDb(ticker);
-
-
-
+    console.log('remove', row, ticker);
+  // removeTickerFromDb(ticker);
 
 }
 
@@ -200,45 +169,11 @@ function removeTickerFromDOMAndLocalStorage(row, ticker) {
 
 
 
-document.addEventListener('DOMContentLoaded', (event) => {
-  // Select the button by its ID
-  const removeButton = document.getElementById('remove');
-
-  // Add click event listener to the button
-  removeButton.addEventListener('click', (event) => {
-    // Prevent the default action of the event (e.g., form submission)
-    event.preventDefault();
-
-    // Call the validateTicker function
-    removeTicker();
-  });
-});
 
 
 
 
 
-
-async function addTickerToDatabase(ticker, tickerName, tickerType, userId) {
-  let params =
-  {
-
-    "ticker_code": ticker,
-    "ticker_name": tickerName,
-    "ticker_type": tickerType,
-    "user_id": userId
-
-  };
-  let url = 'http://127.0.0.1:5000/add_ticker';
-
-  //if ticker is NOT in Database - make the api call else return 0
-  let response = await axios.post(url, params)
-    .then(response => {
-      console.log('Response from server:', response);
-    });
-  console.log(response)
-  return response;
-}
 
 
 async function removeTickerFromDb(ticker) {
@@ -472,7 +407,7 @@ async function getWatchlist(id) {
 
 
 
-window.addEventListener('load', getWatchlist(userId));
+// window.addEventListener('load', getWatchlist(userId));
 
 
 async function refreshWatchlist(watchlist) {
