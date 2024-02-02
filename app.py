@@ -112,7 +112,7 @@ def dashboard():
         # raise Unauthorized()
 
     else:
-        return render_template("dashboard.html")
+        return render_template("dashboard.html",id=session['user_id'])
 
 
 @app.route("/logout")
@@ -141,21 +141,36 @@ def add_ticker_to_db():
     if existing_entry:
         return "This ticker code already exists for the user.", 400
 
-        new_entry = Watchlist(
+    else :  new_entry = Watchlist(
             ticker_code=data['ticker_code'],
             ticker_name=data['ticker_name'],
             ticker_type=data['ticker_type'],
             user_id=data['user_id']
         )
+    db.session.add(new_entry)
+    db.session.commit()
+    return 'Entries added to watchlist', 200
 
-        db.session.add(new_entry)
+
+
+
+
+@app.route('/delete_ticker/<ticker>', methods=['POST'])
+def delete_ticker_from_db(ticker):
+
+
+
+    # Find the ticker by id
+    ticker_to_delete = Watchlist.query.filter_by(ticker_code=ticker).first()
+
+
+    if ticker_to_delete:
+        # Delete the ticker from the database
+        db.session.delete(ticker_to_delete)
         db.session.commit()
-        return 'Entries added to watchlist', 200
-
-  
-
-
-
+        return jsonify({'message': 'Ticker deleted successfully'}), 200
+    else:
+        return jsonify({'error': 'Ticker not found'}), 404
 
 
 
@@ -330,22 +345,6 @@ def get_weather(city):
 
 
 
-@app.route('/delete_ticker/<ticker>', methods=['POST'])
-def delete_ticker_from_db(ticker):
-
-
-
-    # Find the ticker by id
-    ticker_to_delete = Watchlist.query.filter_by(ticker_code=ticker).first()
-
-
-    if ticker_to_delete:
-        # Delete the ticker from the database
-        db.session.delete(ticker_to_delete)
-        db.session.commit()
-        return jsonify({'message': 'Ticker deleted successfully'}), 200
-    else:
-        return jsonify({'error': 'Ticker not found'}), 404
 
 
 

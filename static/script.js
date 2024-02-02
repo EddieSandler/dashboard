@@ -27,7 +27,7 @@ async function retrieveQuote() {
 
   } catch {
     alert('invalid ticker');
-    return 1;
+    return ;
   }
 
 };
@@ -112,17 +112,17 @@ function displayQuoteInWatchlist(ticker,data) {
   row.appendChild(symbolCell);
 
   const priceCell = document.createElement('td');
-  priceCell.textContent = data.data.regularMarketPrice;
+  priceCell.textContent = data.data.regularMarketPrice.toFixed(2);
   row.appendChild(priceCell);
 
 
 
   const changeCell = document.createElement('td');
-  changeCell.textContent = data.data.regularMarketChange;
+  changeCell.textContent = data.data.regularMarketChange.toFixed(2);
   row.appendChild(changeCell);
 
   const PctchangeCell = document.createElement('td');
-  PctchangeCell.textContent = data.data.regularMarketChangePercent;
+  PctchangeCell.textContent = data.data.regularMarketChangePercent.toFixed(2);
   row.appendChild(PctchangeCell);
 
   if (data.data.regularMarketChange > 0) {
@@ -146,8 +146,9 @@ function displayQuoteInWatchlist(ticker,data) {
 
   removeButton.id = 'remove';
   row.appendChild(removeButton);
-  removeButton.onclick = function () {
-    removeTickerFromDOM(row, ticker);
+  removeButton.onclick = async function () {
+    await removeTickerFromDOM(row, ticker)
+    await removeTickerFromDb(ticker)
   };
 
   table.appendChild(row);
@@ -158,34 +159,26 @@ function displayQuoteInWatchlist(ticker,data) {
 
 }
 
-function removeTickerFromDOM(row, ticker) {
+async function removeTickerFromDOM(row, ticker) {
   row.parentNode.removeChild(row);
-    console.log('remove', row, ticker);
-  // removeTickerFromDb(ticker);
+    console.log('removing',ticker);
+    removeTickerFromDb(ticker);
 
 }
 
 
-
-
-
-
-
-
-
-
-
-
 async function removeTickerFromDb(ticker) {
+
+  console.log('executing remove Ticker for ',ticker)
 
   let url = `http://127.0.0.1:5000/delete_ticker/${ticker}`;
 
 
-  let response = await axios.post(url)
+  let response =  axios.post(url)
     .then(response => {
       console.log('Response from server:', response);
     });
-  // console.log(response)
+  console.log(response)
   return updateWatchlist();
 
 
