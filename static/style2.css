@@ -116,3 +116,11 @@ ul li a:hover {
   border: none; /* Remove default border */
   transition: all 0.3s ease; /* Smooth transition for hover effect */
 }
+
+.positive {
+  color:green
+}
+
+.negative {
+  color:red
+}
