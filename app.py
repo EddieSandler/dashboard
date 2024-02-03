@@ -89,13 +89,37 @@ def login():
 
         if user:
             session["user_id"] = user.id  # keep logged in
-            return render_template('dashboard.html',id=user.id)
-
+            session['name']=name# keep logged in
+            watchlist_items = Watchlist.query.filter_by(user_id=user.id).all()
+            watchlist = [{'ticker_code': item.ticker_code, 'user_id': item.user_id} for item in watchlist_items]
+            ticker_codes=[item['ticker_code'] for item in watchlist]
+            return update_watchlist(ticker_codes)
         else:
             form.username.errors = ["Bad name/password"]
 
     return render_template("login.html", form=form)
-# end-login
+
+
+@app.route('/update_watchlist/',methods=['POST'])
+def update_watchlist(data):
+
+    tickers = yq.Ticker(data)
+    watchlist= tickers.price
+    watchlist_data=[]
+
+    for key,value in watchlist.items():
+        print(key,value['regularMarketPrice'],value['regularMarketChange'],value['regularMarketChangePercent'],value['shortName'])
+        ticker_data ={
+            'symbol':key,
+            'price':value['regularMarketPrice'],
+        'change':value['regularMarketChange'],
+        'changep':value['regularMarketChangePercent'],
+        'name':value['shortName']
+        }
+
+        watchlist_data.append(ticker_data)
+    return render_template('dashboard.html',data=watchlist_data)
+
 
 
 @app.route("/dashboard")
@@ -105,11 +129,6 @@ def dashboard():
     if "user_id" not in session:
         flash("You must be logged in to view!")
         return redirect("/")
-
-        # alternatively, can return HTTP Unauthorized status:
-        #
-        # from werkzeug.exceptions import Unauthorized
-        # raise Unauthorized()
 
     else:
         return render_template("dashboard.html",id=session['user_id'])
@@ -348,35 +367,22 @@ def get_weather(city):
 
 
 
-@app.route('/get_watchlist/<id>')
-def retrieve_watchlist(id):
+# @app.route('/get_watchlist/<id>')
+# def retrieve_watchlist(id):
 
-    ticker_codes = Watchlist.query.filter(Watchlist.user_id == id).with_entities(Watchlist.ticker_code).all()
-    ticker_code_list = [ticker_code[0] for ticker_code in ticker_codes]
-    response=jsonify(ticker_code_list)
+#     ticker_codes = Watchlist.query.filter(Watchlist.user_id == id).with_entities(Watchlist.ticker_code).all()
+#     ticker_code_list = [ticker_code[0] for ticker_code in ticker_codes]
+#     response=jsonify(ticker_code_list)
 
-    print('here is the list ',response)
-
-
-
-
-    return response
+#     print('here is the list ',response)
 
 
 
 
-
-@app.route('/update_watchlist/',methods=['POST'])
-def update_watchlist():
-    data = request.json
-    ticker_list=data['watchlist']
+#     return response
 
 
 
 
 
 
-    tickers = yq.Ticker(ticker_list)
-    prices = tickers.price
-
-    return prices
