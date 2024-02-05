@@ -181,17 +181,19 @@ def add_ticker_to_db():
 
 @app.route('/delete_ticker/<ticker>', methods=['POST'])
 def delete_ticker_from_db(ticker):
+    print('executing delet function')
 
 
 
     # Find the ticker by id
     ticker_to_delete = Watchlist.query.filter_by(ticker_code=ticker).first()
-
+    print('ticker to delete is ',ticker_to_delete)
 
     if ticker_to_delete:
         # Delete the ticker from the database
         db.session.delete(ticker_to_delete)
         db.session.commit()
+        print('ticker deleted and committed')
         return jsonify({'message': 'Ticker deleted successfully'}), 200
     else:
         return jsonify({'error': 'Ticker not found'}), 404

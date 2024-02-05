@@ -133,11 +133,7 @@ function displayQuote(response, ticker) {
   watchlistButtonClickListener = () => addTickerToDatabase(ticker, response);
   watchlistButton.addEventListener('click', watchlistButtonClickListener);
 
-  // function handleWatchlistButtonClick(ticker, response) {
-  //   watchlistButton.removeEventListener('click', handleWatchlistButtonClick);
-  //   addTickerToDatabase(ticker, response);
 
-  // }
 }
 
 async function addTickerToDatabase(ticker, response) {
@@ -226,7 +222,7 @@ function displayQuoteInWatchlist(ticker, data) {
   removeButton.id = 'remove';
   row.appendChild(removeButton);
   removeButton.onclick = async function () {
-    await removeTickerFromDOM(row, ticker, symbolCell.id);
+    await removeTickerFromDOM(row, ticker,);
     await removeTickerFromDb(ticker);
   };
 
@@ -238,18 +234,15 @@ function displayQuoteInWatchlist(ticker, data) {
 
 }
 
-async function removeTickerFromDOM(row, ticker, id) {
+async function removeTickerFromDOM(row, ticker) {
   console.log('removing ', row, ticker);
-  if (ticker === id) {
+
     await row.parentNode.removeChild(row);
     console.log('removing', ticker);
-    removeTickerFromDb(ticker);
-  } else {
-    console.log('Houston, we got a problem');
-    return 1;
+    return 
+
   }
 
-}
 
 
 async function removeTickerFromDb(ticker) {
@@ -264,7 +257,7 @@ async function removeTickerFromDb(ticker) {
       console.log('Response from server:', response);
     });
   console.log(response);
-  return updateWatchlist();
+  return 'ticker deleted'
 
 
 
