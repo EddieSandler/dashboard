@@ -1,9 +1,74 @@
 let watchlistButtonClickListener;
-// let watchlist = JSON.parse(sessionStorage.getItem('watchlist')) || [];
+BASE_URL = 'http://127.0.0.1:5000';
 
-let userId = document.getElementById('userId')
-userId=parseInt(userId.innerText);
-BASE_URL='http://127.0.0.1:5000'
+
+let userId = document.getElementById('userId');
+userId = parseInt(userId.innerText);
+
+
+//retrieves watchlist from backend and populates DOM on login
+
+
+let watchlist = document.getElementById("watchlist-data").innerHTML;
+watchlistInnerHTML = watchlist.replace(/&amp;/g, '&').replace(/'/g, '"');
+
+
+if(watchlistInnerHTML) array = JSON.parse(watchlistInnerHTML);
+let userWatchlist = new Set(array);
+
+for (item of userWatchlist) {
+  console.log(item.symbol, item.price.toFixed(2), item.change.toFixed(2), item.changep.toFixed(2), item.name);
+  let table = document.getElementById('watchlist-table');
+
+  const row = document.createElement('tr');
+  const symbolCell = document.createElement('td');
+  symbolCell.textContent = item.symbol;
+  symbolCell.id = item.symbol;
+  row.appendChild(symbolCell);
+
+  const priceCell = document.createElement('td');
+  priceCell.textContent = item.price.toFixed(2);
+  row.appendChild(priceCell);
+
+  const changeCell = document.createElement('td');
+  changeCell.textContent = item.change.toFixed(2);
+  row.appendChild(changeCell);
+
+
+  const PctchangeCell = document.createElement('td');
+  PctchangeCell.textContent = item.changep.toFixed(2);
+  row.appendChild(PctchangeCell);
+
+  if (item.change > 0) {
+    priceCell.className = 'positive';
+    changeCell.className = 'positive';
+    PctchangeCell.className = 'positive';
+  } else {
+    priceCell.className = 'negative';
+    changeCell.className = 'negative';
+    PctchangeCell.className = 'negative';
+
+  }
+
+  const nameCell = document.createElement('td');
+  nameCell.textContent = item.name;
+  row.appendChild(nameCell);
+
+  let removeButton = document.createElement('button');
+  removeButton.textContent = 'Remove';
+
+  removeButton.id = 'remove';
+  row.appendChild(removeButton);
+  removeButton.onclick = async function () {
+    await removeTickerFromDOM(row, item.symbol);
+    await removeTickerFromDb(item.symbol);
+  };
+
+
+  table.appendChild(row);
+
+}
+
 
 
 
@@ -27,17 +92,18 @@ async function retrieveQuote() {
 
   } catch {
     alert('invalid ticker');
-    return ;
+    user_input.value = '';
+    return;
   }
 
 };
 
 document.addEventListener('DOMContentLoaded', (event) => {
   const quoteButton = document.getElementById('quote');
-   quoteButton.addEventListener('click', (event) => {
-   event.preventDefault();
+  quoteButton.addEventListener('click', (event) => {
+    event.preventDefault();
     retrieveQuote();
-});
+  });
 });
 
 function displayQuote(response, ticker) {
@@ -50,7 +116,7 @@ function displayQuote(response, ticker) {
   changeD.textContent = response.data.regularMarketChange.toFixed(2);
   changeP = document.getElementById('Pctchange');
   changeP.textContent = response.data.regularMarketChangePercent.toFixed(2);
-  symbol=document.getElementById('nameField').textContent = response.data.shortName;
+  symbol = document.getElementById('nameField').textContent = response.data.shortName;
 
   if (response.data.regularMarketChange > 0) {
     price.className = 'positive';
@@ -64,51 +130,63 @@ function displayQuote(response, ticker) {
   }
   const watchlistButton = document.getElementById('add');
   watchlistButton.removeEventListener('click', watchlistButtonClickListener);
-  watchlistButtonClickListener = () => addTickerToDatabase(ticker,response);
+  watchlistButtonClickListener = () => addTickerToDatabase(ticker, response);
   watchlistButton.addEventListener('click', watchlistButtonClickListener);
 
-  function handleWatchlistButtonClick(ticker,response) {
-  watchlistButton.removeEventListener('click', handleWatchlistButtonClick);
-  addTickerToDatabase(ticker,response)
+  // function handleWatchlistButtonClick(ticker, response) {
+  //   watchlistButton.removeEventListener('click', handleWatchlistButtonClick);
+  //   addTickerToDatabase(ticker, response);
 
-  }
+  // }
 }
-async function addTickerToDatabase(ticker, response) {
-  let params =
-  {
 
+async function addTickerToDatabase(ticker, response) {
+  console.log('data to add to DOM ', response);
+  console.log('the watchlist now contains', userWatchlist);
+  let params = {
     "ticker_code": ticker,
     "ticker_name": response.data.shortName,
     "ticker_type": response.data.quoteType,
     "user_id": userId
-
   };
-  console.log('adding this to db',params)
+  console.log('adding this to db', params);
   let url = 'http://127.0.0.1:5000/add_ticker';
 
-try {
-  let res = await axios.post(url, params)
-   displayQuoteInWatchlist(ticker,response);
+  try {
+    console.log('calling api');
+    let res = await axios.post(url, params);
+    console.log('api called');
+    return displayQuoteInWatchlist(ticker, response);
 
   } catch (error) {
-alert('Ticker Already in Watchlist')
-return
-
+    if (error.response && error.response.status === 409) { // Assuming 409 status code for duplicate entry
+      alert('Ticker Already in Watchlist');
+    } else {
+      alert('An error occurred while adding the ticker');
+    }
+    return error;
   }
 }
 
 
 
+function displayQuoteInWatchlist(ticker, data) {
+  console.log('time to add to watchlist: ', ticker, data);
+  userWatchlist.add({
+    symbol: ticker,
+    price: data.data.regularMarketPrice,
+    change: data.data.regularMarketChange,
+    changep: data.data.regularMarketChangePercent,
+    name: data.data.shortName
+  });
 
-function displayQuoteInWatchlist(ticker,data) {
-  console.log('time to add to watchlist: ticker: ', ticker , data)
 
   let table = document.getElementById('watchlist-table');
   const row = document.createElement('tr');
   const symbolCell = document.createElement('td');
   symbolCell.textContent = ticker;
   symbolCell.id = ticker;
-  console.log('element id is: ',symbolCell.id)
+  console.log('element id is: ', symbolCell.id);
   row.appendChild(symbolCell);
 
   const priceCell = document.createElement('td');
@@ -140,6 +218,7 @@ function displayQuoteInWatchlist(ticker,data) {
   const nameCell = document.createElement('td');
   nameCell.textContent = data.data.shortName;
   row.appendChild(nameCell);
+  table.appendChild(row);
 
   let removeButton = document.createElement('button');
   removeButton.textContent = 'Remove';
@@ -147,11 +226,11 @@ function displayQuoteInWatchlist(ticker,data) {
   removeButton.id = 'remove';
   row.appendChild(removeButton);
   removeButton.onclick = async function () {
-    await removeTickerFromDOM(row, ticker)
-    await removeTickerFromDb(ticker)
+    await removeTickerFromDOM(row, ticker, symbolCell.id);
+    await removeTickerFromDb(ticker);
   };
 
-  table.appendChild(row);
+
 
 
   // addTickerToDatabase(ticker, data.shortName, data.quoteType, userId);
@@ -159,26 +238,32 @@ function displayQuoteInWatchlist(ticker,data) {
 
 }
 
-async function removeTickerFromDOM(row, ticker) {
-  row.parentNode.removeChild(row);
-    console.log('removing',ticker);
+async function removeTickerFromDOM(row, ticker, id) {
+  console.log('removing ', row, ticker);
+  if (ticker === id) {
+    await row.parentNode.removeChild(row);
+    console.log('removing', ticker);
     removeTickerFromDb(ticker);
+  } else {
+    console.log('Houston, we got a problem');
+    return 1;
+  }
 
 }
 
 
 async function removeTickerFromDb(ticker) {
 
-  console.log('executing remove Ticker for ',ticker)
+  console.log('executing remove Ticker for ', ticker);
 
   let url = `http://127.0.0.1:5000/delete_ticker/${ticker}`;
 
 
-  let response =  axios.post(url)
+  let response = axios.post(url)
     .then(response => {
       console.log('Response from server:', response);
     });
-  console.log(response)
+  console.log(response);
   return updateWatchlist();
 
 
@@ -380,49 +465,49 @@ async function removeTickerFromDb(ticker) {
 // }
 
 
-async function getWatchlist(id) {
+// async function getWatchlist(id) {
 
 
-  url = `http://127.0.0.1:5000/get_watchlist/${id}`;
+//   url = `http://127.0.0.1:5000/get_watchlist/${id}`;
 
 
-  let response = await axios.get(url);
-  console.log('user id is', id);
-  console.log('getWatchlist returns: ', response.data);
-  watchlist = response.data;
+//   let response = await axios.get(url);
+//   console.log('user id is', id);
+//   console.log('getWatchlist returns: ', response.data);
+//   watchlist = response.data;
 
-  return watchlist;
-
-
-
-}
+//   return watchlist;
 
 
 
+// }
 
-// window.addEventListener('load', getWatchlist(userId));
 
 
-async function refreshWatchlist(watchlist) {
-  console.log('sending to update', watchlist);
 
-  let url = 'http://127.0.0.1:5000/update_watchlist/';
-  try {
-    const response = await axios.post(url, { watchlist: watchlist });
-    console.log('Response from server:', response);
-    for(let item in response){
-      console.log('id is ',item.id)
-      console.log('data: ',item['regularMarketPrice'])
-    }
-    for (let item of watchlist) console.log(item)
+// // window.addEventListener('load', getWatchlist(userId));
 
-  }
-  catch (error) {
-    console.error('Error while sending data:', error);
-    // Handle error appropriately. Maybe return null or a custom error object.
-    return null;
-  }
-}
+
+// async function refreshWatchlist(watchlist) {
+//   console.log('sending to update', watchlist);
+
+//   let url = 'http://127.0.0.1:5000/update_watchlist/';
+//   try {
+//     const response = await axios.post(url, { watchlist: watchlist });
+//     console.log('Response from server:', response);
+//     for(let item in response){
+//       console.log('id is ',item.id)
+//       console.log('data: ',item['regularMarketPrice'])
+//     }
+//     for (let item of watchlist) console.log(item)
+
+//   }
+//   catch (error) {
+//     console.error('Error while sending data:', error);
+//     // Handle error appropriately. Maybe return null or a custom error object.
+//     return null;
+//   }
+// }
 
 
 
@@ -432,58 +517,58 @@ async function refreshWatchlist(watchlist) {
 
 
 
-document.addEventListener('DOMContentLoaded', async () => {
-  // Initialize event listeners and fetch initial data
-  document.getElementById('quote').addEventListener('click', retrieveQuote);
-//   document.getElementById('zodiac-signs').addEventListener('change', fetchHoroscope);
+// document.addEventListener('DOMContentLoaded', async () => {
+//   // Initialize event listeners and fetch initial data
+//   document.getElementById('quote').addEventListener('click', retrieveQuote);
+// //   document.getElementById('zodiac-signs').addEventListener('change', fetchHoroscope);
 //   document.getElementById('btn-city').addEventListener('click', getWeather);
 //   document.getElementById('joke-me').addEventListener('click', fetchJoke);
 
-  // Fetch initial data for various sections
+// Fetch initial data for various sections
 //   await getWatchlist(userId);
 //   await get_marketSummary();
 //   await get_news();
 //   await getEcoNums();
 //   await get_econ_calendar();
-});
+// });
 
 
 
 
 
-document.addEventListener('DOMContentLoaded', function() {
-  // Attach an event listener to each remove button
-  document.querySelectorAll('.wl-remove').forEach(function(button) {
-      button.addEventListener('click', function() {
-          var symbol = this.getAttribute('data-symbol');
-          var row = this.closest('tr'); // Find the closest parent <tr> element
-          removeItem(symbol, row);
-      });
-  });
-});
+// document.addEventListener('DOMContentLoaded', function() {
+//   // Attach an event listener to each remove button
+//   document.querySelectorAll('.wl-remove').forEach(function(button) {
+//       button.addEventListener('click', function() {
+//           var symbol = this.getAttribute('data-symbol');
+//           var row = this.closest('tr'); // Find the closest parent <tr> element
+//           removeItem(symbol, row);
+//       });
+//   });
+// });
 
 function removeItem(symbol, row) {
   console.log("Removing item:", symbol);
 
   try {
-      // Attempt to remove the ticker from the database
-      removeTickerFromDb(symbol);
+    // Attempt to remove the ticker from the database
+    removeTickerFromDb(symbol);
 
-      // If successful, remove the row from the DOM
-      row.remove();
+    // If successful, remove the row from the DOM
+    row.remove();
   } catch (error) {
-      // Handle error (e.g., ticker couldn't be removed from the database)
-      console.error("Error removing ticker:", error);
-      // Optionally, show an error message to the user
+    // Handle error (e.g., ticker couldn't be removed from the database)
+    console.error("Error removing ticker:", error);
+    // Optionally, show an error message to the user
   }
 }
 
 async function removeTickerFromDb(symbol) {
   // Your AJAX call or fetch request to remove the ticker from the database
   // Example (update the URL and method as per your server-side setup):
-  url=`${BASE_URL}/delete_ticker/${symbol}`
+  url = `${BASE_URL}/delete_ticker/${symbol}`;
   const response = await axios.post(url);
-  return response
+  return response;
 }
 
 // function refreshWindow() {

@@ -118,7 +118,7 @@ def update_watchlist(data):
         }
 
         watchlist_data.append(ticker_data)
-    return render_template('dashboard.html',data=watchlist_data)
+    return render_template('dashboard.html',data=watchlist_data,id=session['user_id'],name=session['name'])
 
 
 
@@ -168,7 +168,12 @@ def add_ticker_to_db():
         )
     db.session.add(new_entry)
     db.session.commit()
-    return 'Entries added to watchlist', 200
+    print('new ticker is',data['ticker_code'])
+    get_quote(data['ticker_code'])
+
+    return 'Entries added to watchlist ,200'
+
+
 
 
 
