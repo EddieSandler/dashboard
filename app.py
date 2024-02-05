@@ -93,7 +93,7 @@ def login():
             watchlist_items = Watchlist.query.filter_by(user_id=user.id).all()
             watchlist = [{'ticker_code': item.ticker_code, 'user_id': item.user_id} for item in watchlist_items]
             ticker_codes=[item['ticker_code'] for item in watchlist]
-            return update_watchlist(ticker_codes)
+            return load_watchlist(ticker_codes)
         else:
             form.username.errors = ["Bad name/password"]
 
@@ -101,7 +101,7 @@ def login():
 
 
 @app.route('/update_watchlist/',methods=['POST'])
-def update_watchlist(data):
+def load_watchlist(data):
 
     tickers = yq.Ticker(data)
     watchlist= tickers.price
@@ -116,8 +116,9 @@ def update_watchlist(data):
         'changep':value['regularMarketChangePercent'],
         'name':value['shortName']
         }
-
+        print()
         watchlist_data.append(ticker_data)
+        print(watchlist_data)
     return render_template('dashboard.html',data=watchlist_data,id=session['user_id'],name=session['name'])
 
 
@@ -181,7 +182,7 @@ def add_ticker_to_db():
 
 @app.route('/delete_ticker/<ticker>', methods=['POST'])
 def delete_ticker_from_db(ticker):
-    print('executing delet function')
+    print('executing delete function')
 
 
 
@@ -197,6 +198,7 @@ def delete_ticker_from_db(ticker):
         return jsonify({'message': 'Ticker deleted successfully'}), 200
     else:
         return jsonify({'error': 'Ticker not found'}), 404
+
 
 
 
@@ -277,6 +279,14 @@ def get_link(id):
     return my_dict
 
 
+@app.route('/watchlist_refresh',methods=["POST"])
+def refresh_watchlist():
+    # Retrieve data from request body
+    data = request.json.get('symbols', [])
+
+    tickers = yq.Ticker(data)
+    watchlist = tickers.price
+    return watchlist
 
 
 

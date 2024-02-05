@@ -16,12 +16,12 @@ watchlistInnerHTML = watchlist.replace(/&amp;/g, '&').replace(/'/g, '"');
 if(watchlistInnerHTML) array = JSON.parse(watchlistInnerHTML);
 let userWatchlist = new Set(array);
 
-for (item of userWatchlist) {
+for (let item of userWatchlist) {
   console.log(item.symbol, item.price.toFixed(2), item.change.toFixed(2), item.changep.toFixed(2), item.name);
   let table = document.getElementById('watchlist-table');
 
-  const row = document.createElement('tr');
-  const symbolCell = document.createElement('td');
+  let row = document.createElement('tr');
+  let symbolCell = document.createElement('td');
   symbolCell.textContent = item.symbol;
   symbolCell.id = item.symbol;
   row.appendChild(symbolCell);
@@ -57,17 +57,21 @@ for (item of userWatchlist) {
   let removeButton = document.createElement('button');
   removeButton.textContent = 'Remove';
 
-  removeButton.id = 'remove';
+  removeButton.className = 'remove-button';
   row.appendChild(removeButton);
-  removeButton.onclick = async function () {
-    await removeTickerFromDOM(row, item.symbol);
-    await removeTickerFromDb(item.symbol);
-  };
 
+  removeButton.addEventListener('click', () => removeTickerFromDOM(row, item.symbol));
 
   table.appendChild(row);
 
-}
+
+
+  };
+
+
+
+
+
 
 
 
@@ -214,32 +218,44 @@ function displayQuoteInWatchlist(ticker, data) {
   const nameCell = document.createElement('td');
   nameCell.textContent = data.data.shortName;
   row.appendChild(nameCell);
-  table.appendChild(row);
+
 
   let removeButton = document.createElement('button');
   removeButton.textContent = 'Remove';
 
-  removeButton.id = 'remove';
+  removeButton.className = 'remove-button';
   row.appendChild(removeButton);
-  removeButton.onclick = async function () {
-    await removeTickerFromDOM(row, ticker,);
-    await removeTickerFromDb(ticker);
-  };
+
+  removeButton.addEventListener('click',function () {
+    removeTickerFromDOM(row, ticker);
+
+
+  });
 
 
 
 
-  // addTickerToDatabase(ticker, data.shortName, data.quoteType, userId);
+  table.appendChild(row)
 
 
 }
 
-async function removeTickerFromDOM(row, ticker) {
-  console.log('removing ', row, ticker);
+ function removeTickerFromDOM(row, ticker) {
+  if (!ticker) {
+    console.error('Ticker is undefined or null');
+    return; // Exit the function if ticker is not defined
+  }
+  console.log('removing ',ticker);
 
-    await row.parentNode.removeChild(row);
-    console.log('removing', ticker);
-    return 
+  console.log('this is the row to remove',row)
+    row.parentNode.removeChild(row);
+
+    console.log('row removed')
+    console.log('sending this to backend',ticker)
+
+    userWatchlist = new Set([...userWatchlist].filter(item => item.symbol !== ticker));
+
+  removeTickerFromDb(ticker)
 
   }
 
@@ -252,7 +268,7 @@ async function removeTickerFromDb(ticker) {
   let url = `http://127.0.0.1:5000/delete_ticker/${ticker}`;
 
 
-  let response = axios.post(url)
+  let response = await axios.post(url)
     .then(response => {
       console.log('Response from server:', response);
     });
@@ -262,6 +278,32 @@ async function removeTickerFromDb(ticker) {
 
 
 }
+async function updateWatchlist(){
+let symbolsArray = Array.from(userWatchlist).map(item => item.symbol);
+params={"symbols":symbolsArray}
+let url =`${BASE_URL}/watchlist_refresh`
+
+let response =await axios.post(url,params)
+console.log(response)
+
+}
+
+
+function startUpdatingWatchlist() {
+  updateWatchlist(); // Initial call to the function
+  setInterval(updateWatchlist, 10000); // Set interval for 10 seconds (10000 milliseconds)
+}
+
+document.addEventListener('DOMContentLoaded', startUpdatingWatchlist);
+
+
+
+
+
+
+
+
+
 
 
 
@@ -540,29 +582,29 @@ async function removeTickerFromDb(ticker) {
 //   });
 // });
 
-function removeItem(symbol, row) {
-  console.log("Removing item:", symbol);
+// function removeItem(symbol, row) {
+//   console.log("Removing item:", symbol);
 
-  try {
-    // Attempt to remove the ticker from the database
-    removeTickerFromDb(symbol);
+//   try {
+//     // Attempt to remove the ticker from the database
+//     removeTickerFromDb(symbol);
 
-    // If successful, remove the row from the DOM
-    row.remove();
-  } catch (error) {
-    // Handle error (e.g., ticker couldn't be removed from the database)
-    console.error("Error removing ticker:", error);
-    // Optionally, show an error message to the user
-  }
-}
+//     // If successful, remove the row from the DOM
+//     row.remove();
+//   } catch (error) {
+//     // Handle error (e.g., ticker couldn't be removed from the database)
+//     console.error("Error removing ticker:", error);
+//     // Optionally, show an error message to the user
+//   }
+// }
 
-async function removeTickerFromDb(symbol) {
-  // Your AJAX call or fetch request to remove the ticker from the database
-  // Example (update the URL and method as per your server-side setup):
-  url = `${BASE_URL}/delete_ticker/${symbol}`;
-  const response = await axios.post(url);
-  return response;
-}
+// async function removeTickerFromDb(symbol) {
+//   // Your AJAX call or fetch request to remove the ticker from the database
+//   // Example (update the URL and method as per your server-side setup):
+//   url = `${BASE_URL}/delete_ticker/${symbol}`;
+//   const response = await axios.post(url);
+//   return response;
+// }
 
 // function refreshWindow() {
 //   setTimeout(function() {
