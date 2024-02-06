@@ -11,12 +11,14 @@ userId = parseInt(userId.innerText);
 
 let watchlist = document.getElementById("watchlist-data").innerHTML;
 watchlistInnerHTML = watchlist.replace(/&amp;/g, '&').replace(/'/g, '"');
+let userWatchlist = new Set();
 
-
-if (watchlistInnerHTML) array = JSON.parse(watchlistInnerHTML);
-let userWatchlist = new Set(array);
-
-for (let item of userWatchlist) {
+if (watchlistInnerHTML){
+let array = JSON.parse(watchlistInnerHTML);
+userWatchlist=new Set(array)
+}
+if(userWatchlist.size>0){
+for (let item of userWatchlist ) {
   console.log(item.symbol, item.price.toFixed(2), item.change.toFixed(2), item.changep.toFixed(2), item.name);
   let table = document.getElementById('watchlist-table');
 
@@ -65,11 +67,10 @@ for (let item of userWatchlist) {
   table.appendChild(row);
 
 
-
-};
-
+}
 
 
+}
 
 
 
@@ -334,6 +335,7 @@ function startUpdatingWatchlist() {
 }
 
 document.addEventListener('DOMContentLoaded', startUpdatingWatchlist);
+
 
 
 
