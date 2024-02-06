@@ -1,3 +1,8 @@
+//load all api data
+
+getEcoNums()
+get_econ_calendar()
+
 let watchlistButtonClickListener;
 BASE_URL = 'http://127.0.0.1:5000';
 
@@ -336,10 +341,20 @@ function startUpdatingWatchlist() {
 
 document.addEventListener('DOMContentLoaded', startUpdatingWatchlist);
 
+function updateNews() {
+  get_news(); // Initial call to the function
+  setInterval(get_news, 60000); // Set interval for 60 seconds (10000 milliseconds)
+}
 
+document.addEventListener('DOMContentLoaded', updateNews);
 
 
+function updateMarketSummary() {
+  get_marketSummary() // Initial call to the function
+  setInterval(get_marketSummary, 60000); // Set interval for 60 seconds (10000 milliseconds)
+}
 
+document.addEventListener('DOMContentLoaded', updateMarketSummary);
 
 
 
@@ -348,309 +363,197 @@ document.addEventListener('DOMContentLoaded', startUpdatingWatchlist);
 
 
 
-// document.getElementById('zodiac-signs').addEventListener('change', function () {
-//   var selectedSign = this.value;
-//   console.log(selectedSign);
-//   let url = `http://127.0.0.1:5000/horoscope/${selectedSign}`;
-//   axios.get(url)
-//     .then(function (response) {
 
-//       let reading = document.getElementById('todays-horoscope');
-//       reading.innerHTML = `${selectedSign} - ${response.data}`;
-//     })
-//     .catch(function (error) {
-//       console.error(error); // Handle errors
-//     });
+document.getElementById('zodiac-signs').addEventListener('change', function () {
+  var selectedSign = this.value;
+  console.log(selectedSign);
+  let url = `http://127.0.0.1:5000/horoscope/${selectedSign}`;
+  axios.get(url)
+    .then(function (response) {
 
+      let reading = document.getElementById('todays-horoscope');
+      reading.innerHTML = `${selectedSign} - ${response.data}`;
+    })
+    .catch(function (error) {
+      console.error(error); // Handle errors
+    });
 
-// });
 
+});
 
-// document.getElementById('btn-city').addEventListener('click', getWeather);
 
-// function getWeather() {
+document.getElementById('btn-city').addEventListener('click', getWeather);
 
-//   let city = document.getElementById('input-city').value;
-//   let url = `http://127.0.0.1:5000/weather/${city}`;
-//   axios.get(url)
-//     .then(function (response) {
-//       // let weather=document.getElementById('todays-weather')
-//       // weather.innerHTML=`${city}-${response.data}`
+function getWeather() {
 
-//       let location = response.data.location.name;
-//       let temp = response.data.data.values.temperature;
-//       let humidity = response.data.data.values.humidity;
-//       let precipitation = response.data.data.values.precipitationProbability;
+  let city = document.getElementById('input-city').value;
+  let url = `http://127.0.0.1:5000/weather/${city}`;
+  axios.get(url)
+    .then(function (response) {
+      // let weather=document.getElementById('todays-weather')
+      // weather.innerHTML=`${city}-${response.data}`
 
-//       document.getElementById("location").innerHTML = location;
-//       document.getElementById("temp").innerHTML = temp;
-//       document.getElementById("humidity").innerHTML = humidity;
-//       document.getElementById("precipitation").innerHTML = precipitation;
+      let location = response.data.location.name;
+      let temp = response.data.data.values.temperature;
+      let humidity = response.data.data.values.humidity;
+      let precipitation = response.data.data.values.precipitationProbability;
 
-//       document.getElementById('todays-weather');
+      document.getElementById("location").innerHTML = location;
+      document.getElementById("temp").innerHTML = temp;
+      document.getElementById("humidity").innerHTML = humidity;
+      document.getElementById("precipitation").innerHTML = precipitation;
 
-//     })
-//     .catch(function (error) {
-//       console.error(error); // Handle errors
-//     });
+      document.getElementById('todays-weather');
 
+    })
+    .catch(function (error) {
+      console.error(error); // Handle errors
+    });
 
 
-// }
 
-// async function get_marketSummary() {
-//   let table = document.getElementById('market-summary');
-//   url = 'http://127.0.0.1:5000/market_summary';
+}
 
-//   response = await axios.get(url)
-//     .then(function (response) {
+async function get_marketSummary() {
+  let table = document.getElementById('market-summary');
+  url = 'http://127.0.0.1:5000/market_summary';
 
-//       for (let item of response.data) {
-//         var row = table.insertRow();
+  response = await axios.get(url)
+    .then(function (response) {
 
-//         var cell1 = row.insertCell(0);
-//         var cell2 = row.insertCell(1);
-//         var cell3 = row.insertCell(2);
-//         var cell4 = row.insertCell(3);
+      for (let item of response.data) {
+        var row = table.insertRow();
 
-//         if (item.longName) {
-//           cell1.innerHTML = item.longName;
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        var cell3 = row.insertCell(2);
+        var cell4 = row.insertCell(3);
 
-//         } else {
-//           cell1.innerHTML = item.shortName;
-//         }
-//         cell2.innerHTML = item.regularMarketPrice.fmt;
-//         cell3.innerHTML = item.regularMarketChange.fmt;
-//         cell4.innerHTML = item.regularMarketChangePercent.fmt;
+        if (item.longName) {
+          cell1.innerHTML = item.longName;
 
+        } else {
+          cell1.innerHTML = item.shortName;
+        }
+        cell2.innerHTML = item.regularMarketPrice.fmt;
+        cell3.innerHTML = item.regularMarketChange.fmt;
+        cell4.innerHTML = item.regularMarketChangePercent.fmt;
 
-//       }
 
-//     });
+      }
 
-//   // add listener to reload
-// }
+    });
 
-// async function get_news() {
-//   let headlines = document.getElementById('news');
-//   url = 'http://127.0.0.1:5000/us_news';
-//   await axios.get(url)
-//     .then(function (response) {
+  // add listener to reload
+}
 
-//       response.data.news.forEach(story => {
-//         const row = document.createElement('div');
-//         row.classList.add('news-row');
+async function get_news() {
+  let headlines = document.getElementById('news');
+  url = 'http://127.0.0.1:5000/us_news';
+  await axios.get(url)
+    .then(function (response) {
 
-//         const link = document.createElement('a');
-//         link.href = story.link;
-//         link.textContent = story.title;
-//         link.target = "_blank"; // Open in new tab
+      response.data.news.forEach(story => {
+        const row = document.createElement('div');
+        row.classList.add('news-row');
 
-//         row.appendChild(link);
-//         headlines.appendChild(row);
-//       });
+        const link = document.createElement('a');
+        link.href = story.link;
+        link.textContent = story.title;
+        link.target = "_blank"; // Open in new tab
 
-//     })
-//     .catch(function (error) {
-//       console.error(error); // Handle errors
-//     });
+        row.appendChild(link);
+        headlines.appendChild(row);
+      });
 
-// }
-// async function jokeMe() {
-//   url = 'http://127.0.0.1:5000/joke';
-//   let joke = document.getElementById('joke');
-//   await axios.get(url)
-//     .then(function (response) {
-//       joke.innerHTML = response.data;
+    })
+    .catch(function (error) {
+      console.error(error); // Handle errors
+    });
 
+}
+async function jokeMe() {
+  url = 'http://127.0.0.1:5000/joke';
+  let joke = document.getElementById('joke');
+  await axios.get(url)
+    .then(function (response) {
+      joke.innerHTML = response.data;
 
-//     });
-// }
 
-// const joker = document.getElementById('joke-me');
+    });
+}
 
-// joker.addEventListener('click', jokeMe);
+const joker = document.getElementById('joke-me');
 
+joker.addEventListener('click', jokeMe);
 
 
 
-// async function getEcoNums() {
-//   url = 'http://127.0.0.1:5000/economic_data';
-//   let econTable = document.getElementById('ecoStats');
-//   await axios.get(url)
-//     .then(function (response) {
 
-//       for (let item in response.data) {
+async function getEcoNums() {
+  url = 'http://127.0.0.1:5000/economic_data';
+  let econTable = document.getElementById('ecoStats');
+  await axios.get(url)
+    .then(function (response) {
 
-//         // Create a new row
-//         const row = document.createElement('tr');
+      for (let item in response.data) {
 
-//         // Create the first cell for the indicator name
-//         const nameCell = document.createElement('td');
-//         nameCell.textContent = item;
-//         row.appendChild(nameCell);
+        // Create a new row
+        const row = document.createElement('tr');
 
-//         // Create the second cell for the indicator value
-//         const valueCell = document.createElement('td');
-//         valueCell.textContent = response.data[item];
-//         row.appendChild(valueCell);
+        // Create the first cell for the indicator name
+        const nameCell = document.createElement('td');
+        nameCell.textContent = item;
+        row.appendChild(nameCell);
 
-//         // Append the new row to the table
-//         econTable.appendChild(row);
-//       }
-//     });
+        // Create the second cell for the indicator value
+        const valueCell = document.createElement('td');
+        valueCell.textContent = response.data[item];
+        row.appendChild(valueCell);
 
+        // Append the new row to the table
+        econTable.appendChild(row);
+      }
+    });
 
 
-// }
-// async function get_econ_calendar() {
-//   url = 'http://127.0.0.1:5000/calendar';
 
-//   response = await axios.get(url);
-//   display_econ_calendar(response);
-// }
+}
+async function get_econ_calendar() {
+  url = 'http://127.0.0.1:5000/calendar';
 
-// function display_econ_calendar(data) {
-//   const container = document.getElementById('econ-calendar');
-//   const table = document.getElementById('eco-releases');
-//   data.data.map((el) => {
-//     for (const [key, value] of Object.entries(el)) {
+  response = await axios.get(url);
+  display_econ_calendar(response);
+}
 
-//       console.log('key', key, 'value', value);
-//       const row = document.createElement('tr');
-//       const keyCell = document.createElement('td');
-//       keyCell.textContent = key;
-//       row.append(keyCell);
-//       const valueCell = document.createElement('td');
-//       if (el.value !== 'NA') {
-//         const link = document.createElement('a');
-//         link.href = value;
-//         link.textContent = value;
-//         link.target = "_blank";
-//         valueCell.append(link);
-//       } else {
-//         valueCell.textContent = 'NA';
-//       }
-//       row.append(valueCell);
-//       table.appendChild(row);
+function display_econ_calendar(data) {
+  const container = document.getElementById('econ-calendar');
+  const table = document.getElementById('eco-releases');
+  data.data.map((el) => {
+    for (const [key, value] of Object.entries(el)) {
 
-//     }
-//   });
-//   container.appendChild(table);
+      console.log('key', key, 'value', value);
+      const row = document.createElement('tr');
+      const keyCell = document.createElement('td');
+      keyCell.textContent = key;
+      row.append(keyCell);
+      const valueCell = document.createElement('td');
+      if (el.value !== 'NA') {
+        const link = document.createElement('a');
+        link.href = value;
+        link.textContent = value;
+        link.target = "_blank";
+        valueCell.append(link);
+      } else {
+        valueCell.textContent = 'NA';
+      }
+      row.append(valueCell);
+      table.appendChild(row);
 
-// }
+    }
+  });
+  container.appendChild(table);
 
+}
 
-// async function getWatchlist(id) {
 
-
-//   url = `http://127.0.0.1:5000/get_watchlist/${id}`;
-
-
-//   let response = await axios.get(url);
-//   console.log('user id is', id);
-//   console.log('getWatchlist returns: ', response.data);
-//   watchlist = response.data;
-
-//   return watchlist;
-
-
-
-// }
-
-
-
-
-// // window.addEventListener('load', getWatchlist(userId));
-
-
-// async function refreshWatchlist(watchlist) {
-//   console.log('sending to update', watchlist);
-
-//   let url = 'http://127.0.0.1:5000/update_watchlist/';
-//   try {
-//     const response = await axios.post(url, { watchlist: watchlist });
-//     console.log('Response from server:', response);
-//     for(let item in response){
-//       console.log('id is ',item.id)
-//       console.log('data: ',item['regularMarketPrice'])
-//     }
-//     for (let item of watchlist) console.log(item)
-
-//   }
-//   catch (error) {
-//     console.error('Error while sending data:', error);
-//     // Handle error appropriately. Maybe return null or a custom error object.
-//     return null;
-//   }
-// }
-
-
-
-//create function to  replace watchlist in DOM with the refreshed watchlist
-// get ticker and watchlist from refreshWatchlist
-//assign a ticker  id to each element
-
-
-
-// document.addEventListener('DOMContentLoaded', async () => {
-//   // Initialize event listeners and fetch initial data
-//   document.getElementById('quote').addEventListener('click', retrieveQuote);
-// //   document.getElementById('zodiac-signs').addEventListener('change', fetchHoroscope);
-//   document.getElementById('btn-city').addEventListener('click', getWeather);
-//   document.getElementById('joke-me').addEventListener('click', fetchJoke);
-
-// Fetch initial data for various sections
-//   await getWatchlist(userId);
-//   await get_marketSummary();
-//   await get_news();
-//   await getEcoNums();
-//   await get_econ_calendar();
-// });
-
-
-
-
-
-// document.addEventListener('DOMContentLoaded', function() {
-//   // Attach an event listener to each remove button
-//   document.querySelectorAll('.wl-remove').forEach(function(button) {
-//       button.addEventListener('click', function() {
-//           var symbol = this.getAttribute('data-symbol');
-//           var row = this.closest('tr'); // Find the closest parent <tr> element
-//           removeItem(symbol, row);
-//       });
-//   });
-// });
-
-// function removeItem(symbol, row) {
-//   console.log("Removing item:", symbol);
-
-//   try {
-//     // Attempt to remove the ticker from the database
-//     removeTickerFromDb(symbol);
-
-//     // If successful, remove the row from the DOM
-//     row.remove();
-//   } catch (error) {
-//     // Handle error (e.g., ticker couldn't be removed from the database)
-//     console.error("Error removing ticker:", error);
-//     // Optionally, show an error message to the user
-//   }
-// }
-
-// async function removeTickerFromDb(symbol) {
-//   // Your AJAX call or fetch request to remove the ticker from the database
-//   // Example (update the URL and method as per your server-side setup):
-//   url = `${BASE_URL}/delete_ticker/${symbol}`;
-//   const response = await axios.post(url);
-//   return response;
-// }
-
-// function refreshWindow() {
-//   setTimeout(function() {
-//       window.location.reload();
-//   }, 5000); // 5000 milliseconds = 5 seconds
-// }
-
-// refreshWindow(); // Call the function to start the process
