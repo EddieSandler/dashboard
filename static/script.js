@@ -13,7 +13,7 @@ let watchlist = document.getElementById("watchlist-data").innerHTML;
 watchlistInnerHTML = watchlist.replace(/&amp;/g, '&').replace(/'/g, '"');
 
 
-if(watchlistInnerHTML) array = JSON.parse(watchlistInnerHTML);
+if (watchlistInnerHTML) array = JSON.parse(watchlistInnerHTML);
 let userWatchlist = new Set(array);
 
 for (let item of userWatchlist) {
@@ -66,7 +66,7 @@ for (let item of userWatchlist) {
 
 
 
-  };
+};
 
 
 
@@ -226,7 +226,7 @@ function displayQuoteInWatchlist(ticker, data) {
   removeButton.className = 'remove-button';
   row.appendChild(removeButton);
 
-  removeButton.addEventListener('click',function () {
+  removeButton.addEventListener('click', function () {
     removeTickerFromDOM(row, ticker);
 
 
@@ -235,29 +235,29 @@ function displayQuoteInWatchlist(ticker, data) {
 
 
 
-  table.appendChild(row)
+  table.appendChild(row);
 
 
 }
 
- function removeTickerFromDOM(row, ticker) {
+function removeTickerFromDOM(row, ticker) {
   if (!ticker) {
     console.error('Ticker is undefined or null');
     return; // Exit the function if ticker is not defined
   }
-  console.log('removing ',ticker);
+  console.log('removing ', ticker);
 
-  console.log('this is the row to remove',row)
-    row.parentNode.removeChild(row);
+  console.log('this is the row to remove', row);
+  row.parentNode.removeChild(row);
 
-    console.log('row removed')
-    console.log('sending this to backend',ticker)
+  console.log('row removed');
+  console.log('sending this to backend', ticker);
 
-    userWatchlist = new Set([...userWatchlist].filter(item => item.symbol !== ticker));
+  userWatchlist = new Set([...userWatchlist].filter(item => item.symbol !== ticker));
 
-  removeTickerFromDb(ticker)
+  removeTickerFromDb(ticker);
 
-  }
+}
 
 
 
@@ -273,20 +273,59 @@ async function removeTickerFromDb(ticker) {
       console.log('Response from server:', response);
     });
   console.log(response);
-  return 'ticker deleted'
+  return 'ticker deleted';
 
 
 
 }
-async function updateWatchlist(){
-let symbolsArray = Array.from(userWatchlist).map(item => item.symbol);
-params={"symbols":symbolsArray}
-let url =`${BASE_URL}/watchlist_refresh`
+async function updateWatchlist() {
+  let symbolsArray = Array.from(userWatchlist).map(item => item.symbol);
+  params = { "symbols": symbolsArray };
+  let url = `${BASE_URL}/watchlist_refresh`;
 
-let response =await axios.post(url,params)
-console.log(response)
+  try {
+    let response = await axios.post(url, params);
+    response.data.forEach(updatedItem => {
+      updateWatchlistItem(updatedItem);
+    });
+
+  } catch (error) {
+    console.error('error updating watchlist: ', error);
+
+  }
+
 
 }
+
+function updateWatchlistItem(updatedItem) {
+
+  let item=[...userWatchlist].find(i=>i.symbol === updatedItem.symbol);
+  if (item){
+
+    item.price = updatedItem.price;
+    item.change = updatedItem.change;
+    item.changep = updatedItem.changep;
+
+    updateDOMForWatchlistItem(item);
+
+
+  }
+
+
+}
+function updateDOMForWatchlistItem(item) {
+  let symbolCell = document.getElementById(item.symbol);
+  if (symbolCell) {
+    let row = symbolCell.parentElement;
+    row.cells[1].textContent = item.price.toFixed(2);
+    row.cells[2].textContent = item.change.toFixed(2);
+    row.cells[3].textContent = item.changep.toFixed(2);
+    // Update the class for positive/negative changes if needed
+  }
+}
+
+
+
 
 
 function startUpdatingWatchlist() {

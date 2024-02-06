@@ -286,7 +286,31 @@ def refresh_watchlist():
 
     tickers = yq.Ticker(data)
     watchlist = tickers.price
-    return watchlist
+    watchlist_data=[]
+
+    for key,value in watchlist.items():
+        print(key,value['regularMarketPrice'],value['regularMarketChange'],value['regularMarketChangePercent'],value['shortName'])
+        ticker_data ={
+            'symbol':key,
+            'price':value['regularMarketPrice'],
+        'change':value['regularMarketChange'],
+        'changep':value['regularMarketChangePercent'],
+        'name':value['shortName']
+        }
+
+        watchlist_data.append(ticker_data)
+
+    return watchlist_data
+
+
+
+
+
+
+
+
+
+
 
 
 
