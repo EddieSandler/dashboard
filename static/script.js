@@ -1,7 +1,7 @@
 //load all api data
 
-getEcoNums()
-get_econ_calendar()
+getEcoNums();
+get_econ_calendar();
 
 let watchlistButtonClickListener;
 BASE_URL = 'http://127.0.0.1:5000';
@@ -18,61 +18,61 @@ let watchlist = document.getElementById("watchlist-data").innerHTML;
 watchlistInnerHTML = watchlist.replace(/&amp;/g, '&').replace(/'/g, '"');
 let userWatchlist = new Set();
 
-if (watchlistInnerHTML){
-let array = JSON.parse(watchlistInnerHTML);
-userWatchlist=new Set(array)
+if (watchlistInnerHTML) {
+  let array = JSON.parse(watchlistInnerHTML);
+  userWatchlist = new Set(array);
 }
-if(userWatchlist.size>0){
-for (let item of userWatchlist ) {
-  console.log(item.symbol, item.price.toFixed(2), item.change.toFixed(2), item.changep.toFixed(2), item.name);
-  let table = document.getElementById('watchlist-table');
+if (userWatchlist.size > 0) {
+  for (let item of userWatchlist) {
+    console.log(item.symbol, item.price.toFixed(2), item.change.toFixed(2), item.changep.toFixed(2), item.name);
+    let table = document.getElementById('watchlist-table');
 
-  let row = document.createElement('tr');
-  let symbolCell = document.createElement('td');
-  symbolCell.textContent = item.symbol;
-  symbolCell.id = item.symbol;
-  row.appendChild(symbolCell);
+    let row = document.createElement('tr');
+    let symbolCell = document.createElement('td');
+    symbolCell.textContent = item.symbol;
+    symbolCell.id = item.symbol;
+    row.appendChild(symbolCell);
 
-  const priceCell = document.createElement('td');
-  priceCell.textContent = item.price.toFixed(2);
-  row.appendChild(priceCell);
+    const priceCell = document.createElement('td');
+    priceCell.textContent = item.price.toFixed(2);
+    row.appendChild(priceCell);
 
-  const changeCell = document.createElement('td');
-  changeCell.textContent = item.change.toFixed(2);
-  row.appendChild(changeCell);
+    const changeCell = document.createElement('td');
+    changeCell.textContent = item.change.toFixed(2);
+    row.appendChild(changeCell);
 
 
-  const PctchangeCell = document.createElement('td');
-  PctchangeCell.textContent = item.changep.toFixed(2);
-  row.appendChild(PctchangeCell);
+    const PctchangeCell = document.createElement('td');
+    PctchangeCell.textContent = item.changep.toFixed(2);
+    row.appendChild(PctchangeCell);
 
-  if (item.change > 0) {
-    priceCell.className = 'positive';
-    changeCell.className = 'positive';
-    PctchangeCell.className = 'positive';
-  } else {
-    priceCell.className = 'negative';
-    changeCell.className = 'negative';
-    PctchangeCell.className = 'negative';
+    if (item.change > 0) {
+      priceCell.className = 'positive';
+      changeCell.className = 'positive';
+      PctchangeCell.className = 'positive';
+    } else {
+      priceCell.className = 'negative';
+      changeCell.className = 'negative';
+      PctchangeCell.className = 'negative';
+
+    }
+
+    const nameCell = document.createElement('td');
+    nameCell.textContent = item.name;
+    row.appendChild(nameCell);
+
+    let removeButton = document.createElement('button');
+    removeButton.textContent = 'Remove';
+
+    removeButton.className = 'remove-button';
+    row.appendChild(removeButton);
+
+    removeButton.addEventListener('click', () => removeTickerFromDOM(row, item.symbol));
+
+    table.appendChild(row);
+
 
   }
-
-  const nameCell = document.createElement('td');
-  nameCell.textContent = item.name;
-  row.appendChild(nameCell);
-
-  let removeButton = document.createElement('button');
-  removeButton.textContent = 'Remove';
-
-  removeButton.className = 'remove-button';
-  row.appendChild(removeButton);
-
-  removeButton.addEventListener('click', () => removeTickerFromDOM(row, item.symbol));
-
-  table.appendChild(row);
-
-
-}
 
 
 }
@@ -251,13 +251,10 @@ function removeTickerFromDOM(row, ticker) {
     console.error('Ticker is undefined or null');
     return; // Exit the function if ticker is not defined
   }
-  console.log('removing ', ticker);
 
-  console.log('this is the row to remove', row);
   row.parentNode.removeChild(row);
 
-  console.log('row removed');
-  console.log('sending this to backend', ticker);
+
 
   userWatchlist = new Set([...userWatchlist].filter(item => item.symbol !== ticker));
 
@@ -305,8 +302,8 @@ async function updateWatchlist() {
 
 function updateWatchlistItem(updatedItem) {
 
-  let item=[...userWatchlist].find(i=>i.symbol === updatedItem.symbol);
-  if (item){
+  let item = [...userWatchlist].find(i => i.symbol === updatedItem.symbol);
+  if (item) {
 
     item.price = updatedItem.price;
     item.change = updatedItem.change;
@@ -340,26 +337,6 @@ function startUpdatingWatchlist() {
 }
 
 document.addEventListener('DOMContentLoaded', startUpdatingWatchlist);
-
-function updateNews() {
-  get_news(); // Initial call to the function
-  setInterval(get_news, 60000); // Set interval for 60 seconds (10000 milliseconds)
-}
-
-document.addEventListener('DOMContentLoaded', updateNews);
-
-
-function updateMarketSummary() {
-  get_marketSummary() // Initial call to the function
-  setInterval(get_marketSummary, 60000); // Set interval for 60 seconds (10000 milliseconds)
-}
-
-document.addEventListener('DOMContentLoaded', updateMarketSummary);
-
-
-
-
-
 
 
 
@@ -415,6 +392,7 @@ function getWeather() {
 }
 
 async function get_marketSummary() {
+  clearMarketDataSummary()
   let table = document.getElementById('market-summary');
   url = 'http://127.0.0.1:5000/market_summary';
 
@@ -422,12 +400,12 @@ async function get_marketSummary() {
     .then(function (response) {
 
       for (let item of response.data) {
-        var row = table.insertRow();
+        let row = table.insertRow();
 
-        var cell1 = row.insertCell(0);
-        var cell2 = row.insertCell(1);
-        var cell3 = row.insertCell(2);
-        var cell4 = row.insertCell(3);
+        let cell1 = row.insertCell(0);
+        let cell2 = row.insertCell(1);
+        let cell3 = row.insertCell(2);
+        let cell4 = row.insertCell(3);
 
         if (item.longName) {
           cell1.innerHTML = item.longName;
@@ -438,40 +416,83 @@ async function get_marketSummary() {
         cell2.innerHTML = item.regularMarketPrice.fmt;
         cell3.innerHTML = item.regularMarketChange.fmt;
         cell4.innerHTML = item.regularMarketChangePercent.fmt;
-
-
       }
 
     });
 
-  // add listener to reload
+
+}
+//clear market summary prior to periodic update
+
+
+  function clearMarketDataSummary() {
+    const table = document.getElementById('market-summary');
+    // Clear all rows except the header, if there is one
+    while (table.rows.length > 1) {
+        table.deleteRow(1);
+    }
 }
 
-async function get_news() {
-  let headlines = document.getElementById('news');
+
+function updateMarketSummary() {
+  clearMarketDataSummary()
+  get_marketSummary(); // Initial call to the function
+  setInterval(get_marketSummary, 60000); // Set interval for 60 seconds (10000 milliseconds)
+}
+
+document.addEventListener('DOMContentLoaded', updateMarketSummary);
+
+async function get_news(){
+  clearNews()
+  console.log('clearing news')
+  let headlines= document.getElementById('news-table');
   url = 'http://127.0.0.1:5000/us_news';
   await axios.get(url)
-    .then(function (response) {
+  .then(function (response) {
 
-      response.data.news.forEach(story => {
-        const row = document.createElement('div');
+     response.data.news.forEach(story => {
+        let row = headlines.insertRow();
         row.classList.add('news-row');
+        let cell=row.insertCell(0)
 
         const link = document.createElement('a');
         link.href = story.link;
         link.textContent = story.title;
         link.target = "_blank"; // Open in new tab
 
-        row.appendChild(link);
-        headlines.appendChild(row);
-      });
+        cell.appendChild(link);
 
-    })
-    .catch(function (error) {
-      console.error(error); // Handle errors
-    });
+
+
+})
+
+  })
+}
+
+
+
+function updateNews() {
+  console.log('executing update news')
+  clearNews()
+
+  get_news(); // Initial call to the function
+  setInterval(get_news,120000); // Set interval for 120000 seconds (10000 milliseconds)
+}
+
+function clearNews(){
+
+  let table= document.getElementById('news-table')
+  while (table.rows.length > 0) {
+    table.deleteRow(0);
+}
+
 
 }
+
+document.addEventListener('DOMContentLoaded', updateNews);
+
+
+
 async function jokeMe() {
   url = 'http://127.0.0.1:5000/joke';
   let joke = document.getElementById('joke');
@@ -532,7 +553,7 @@ function display_econ_calendar(data) {
   data.data.map((el) => {
     for (const [key, value] of Object.entries(el)) {
 
-      console.log('key', key, 'value', value);
+      
       const row = document.createElement('tr');
       const keyCell = document.createElement('td');
       keyCell.textContent = key;

@@ -190,7 +190,7 @@ def delete_ticker_from_db(ticker):
         # Delete the ticker from the database
         db.session.delete(ticker_to_delete)
         db.session.commit()
-        print('ticker deleted and committed')
+
         return jsonify({'message': 'Ticker deleted successfully'}), 200
     else:
         return jsonify({'error': 'Ticker not found'}), 404
@@ -206,7 +206,7 @@ def refresh_watchlist():
     watchlist_data=[]
 
     for key,value in watchlist.items():
-        print(key,value['regularMarketPrice'],value['regularMarketChange'],value['regularMarketChangePercent'],value['shortName'])
+
         ticker_data ={
             'symbol':key,
             'price':value['regularMarketPrice'],
@@ -237,9 +237,9 @@ def show_economic_data():
         'GDP:':'GDP',
         'GNP:':'GNPCA',
         'CPI:':'CPIAUCSL',
-        'Unemployment:':'UNRATE',
-        '30-Yr Mortgage:':'MORTGAGE30US',
-        'FED FUNDS:':'FEDFUNDS',
+        'Unemployment %:':'UNRATE',
+        '30-Yr Mortgage %:':'MORTGAGE30US',
+        'FED FUNDS %:':'FEDFUNDS',
         'Industrial Production:':'INDPRO',
         'Non Farm Payrolls:':'PAYEMS',
         'Initial Jobless Claims:':'ICSA'
@@ -300,20 +300,12 @@ def get_us_news():
 
 
 
-
-# def get_company_news(symbol):
-
-#     news_count=5
-#     news= yq.search(symbol, news_count={news_count})
-#     return news
-
-
 '''=====================================DAILY HOROSCOPE============'''
 
 @app.route('/horoscope/<sign>',methods=['GET'])
 def test_gpt(sign):
     openai.api_key = OPENAI_API_KEY
-    print(sign)
+
 
     completion = client.chat.completions.create(
         model="gpt-3.5-turbo",
@@ -357,7 +349,7 @@ def get_weather(city):
     response = requests.get(base_url, headers=headers)
 
     weather=response.json()
-    print(response)
+  
     # degree_symbol = '\u00B0'
 
 
