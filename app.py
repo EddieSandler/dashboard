@@ -109,7 +109,7 @@ def load_watchlist(data):
     watchlist_data=[]
 
     for key,value in watchlist.items():
-        print(key,value['regularMarketPrice'],value['regularMarketChange'],value['regularMarketChangePercent'],value['shortName'])
+
         ticker_data ={
             'symbol':key,
             'price':value['regularMarketPrice'],
@@ -117,10 +117,10 @@ def load_watchlist(data):
         'changep':value['regularMarketChangePercent'],
         'name':value['shortName']
         }
-        print()
+
         watchlist_data.append(ticker_data)
-        print(watchlist_data)
-    return render_template('dashboard.html',data=watchlist_data,id=session['user_id'],name=session['name'])
+       
+    return render_template('test.html',data=watchlist_data,id=session['user_id'],name=session['name'])
 
 
 
@@ -134,7 +134,7 @@ def dashboard():
 
     else:
         watchlist_data=[]
-    return render_template("dashboard.html",id=session['user_id'],data=watchlist_data)
+    return render_template("test.html",id=session['user_id'],data=watchlist_data)
 
 
 @app.route("/logout")
@@ -349,7 +349,7 @@ def get_weather(city):
     response = requests.get(base_url, headers=headers)
 
     weather=response.json()
-  
+
     # degree_symbol = '\u00B0'
 
 
