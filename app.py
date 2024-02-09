@@ -10,354 +10,350 @@ from secret import OPENAI_API_KEY,FRED_API_KEY,WEATHER_API_KEY
 from models import db, User,Watchlist # Import the models
 from forms import RegisterForm,LoginForm # Import the form
 import datetime
-
-
-def create_app(db_name,testing=False):
-    app = Flask(__name__)
-    app.testing = testing
-    CORS(app)
-
-    app.config['SECRET_KEY'] = "never-tell!"
-    app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///econ_dashboard'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS']=False
-    app.config['SECRET_KEY'] = 'your_secret_key'
+# from flask_sqlalchemy import SQLAlchemy
+# from sqlalchemy.exc import IntegrityError
 
 
 
-def connect_db(app):
-    with app.app_context():
-        db.app=app
-        db.init_app(app)
 
-        db.create_all()
 
-    today = datetime.date.today()
-    end = today + datetime.timedelta(days=5)
+today = datetime.date.today()
+end = today + datetime.timedelta(days=5)
 
 
 
-    fred = Fred(api_key=FRED_API_KEY)
-    client = OpenAI()
-    '''===========LOGIN and AUTHENTICATION=============='''
+fred = Fred(api_key=FRED_API_KEY)
+client = OpenAI()
 
 
-    @app.route("/")
-    def homepage():
-        """Show homepage with links to site areas."""
+app = Flask(__name__)
+CORS(app)
 
-        return render_template("index.html")
+app.config['SECRET_KEY'] = "never-tell!"
+app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///econ_dashboard'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS']=False
+app.config['SECRET_KEY'] = 'your_secret_key'
+
+db.init_app(app)
+app.app_context().push()
+db.create_all()
 
 
-    @app.route("/register", methods=["GET", "POST"])
-    def register():
-        """Register user: produce form & handle form submission."""
+'''===========LOGIN and AUTHENTICATION=============='''
 
-        form = RegisterForm()
 
-        if  form.is_submitted() and form.validate() :
-            name = form.username.data
-            pwd = form.password.data
+@app.route("/")
+def homepage():
+    """Show homepage with links to site areas."""
 
-            try:
-                user = User.register(name, pwd)
-                db.session.add(user)
-                db.session.commit()
-                session["user_id"] = user.id
+    return render_template("index.html")
 
-                return redirect("/dashboard")
-            except Exception:
-                db.session.rollback()  # Important to roll back the session
-                flash('That username is already taken. Please choose a different one.')
-                return redirect('/')
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    """Register user: produce form & handle form submission."""
+
+    form = RegisterForm()
+
+    if  form.is_submitted() and form.validate() :
+        name = form.username.data
+        pwd = form.password.data
+
+        try:
+            user = User.register(name, pwd)
+            db.session.add(user)
+            db.session.commit()
+            session["user_id"] = user.id
+
+            return redirect("/dashboard")
+        except Exception:
+            db.session.rollback()  # Important to roll back the session
+            flash('That username is already taken. Please choose a different one.')
+            return redirect('/')
+    else:
+        return render_template("register.html", form=form)
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    """Produce login form or handle login."""
+
+    form = LoginForm()
+
+    if  form.is_submitted() and form.validate() :
+        name = form.username.data
+        pwd = form.password.data
+
+        # authenticate will return a user or False
+        user = User.authenticate(name, pwd)
+
+        if user:
+            session["user_id"] = user.id  # keep logged in
+            session['name']=name# keep logged in
+            watchlist_items = Watchlist.query.filter_by(user_id=user.id).all()
+            watchlist = [{'ticker_code': item.ticker_code, 'user_id': item.user_id} for item in watchlist_items]
+            ticker_codes=[item['ticker_code'] for item in watchlist]
+            return load_watchlist(ticker_codes)
         else:
-            return render_template("register.html", form=form)
+            form.username.errors = ["Bad name/password"]
+
+    return render_template("login.html", form=form)
 
 
-    @app.route("/login", methods=["GET", "POST"])
-    def login():
-        """Produce login form or handle login."""
-
-        form = LoginForm()
-
-        if  form.is_submitted() and form.validate() :
-            name = form.username.data
-            pwd = form.password.data
-
-            # authenticate will return a user or False
-            user = User.authenticate(name, pwd)
-
-            if user:
-                session["user_id"] = user.id  # keep logged in
-                session['name']=name# keep logged in
-                watchlist_items = Watchlist.query.filter_by(user_id=user.id).all()
-                watchlist = [{'ticker_code': item.ticker_code, 'user_id': item.user_id} for item in watchlist_items]
-                ticker_codes=[item['ticker_code'] for item in watchlist]
-                return load_watchlist(ticker_codes)
-            else:
-                form.username.errors = ["Bad name/password"]
-
-        return render_template("login.html", form=form)
+@app.route('/update_watchlist/<data>',methods=['POST'])
+def load_watchlist(data):
 
 
-    @app.route('/update_watchlist/<data>',methods=['POST'])
-    def load_watchlist(data):
+    tickers = yq.Ticker(data)
+    watchlist= tickers.price
+    watchlist_data=[]
 
+    for key,value in watchlist.items():
 
-        tickers = yq.Ticker(data)
-        watchlist= tickers.price
-        watchlist_data=[]
+        ticker_data ={
+            'symbol':key,
+            'price':value['regularMarketPrice'],
+        'change':value['regularMarketChange'],
+        'changep':value['regularMarketChangePercent'],
+        'name':value['shortName']
+        }
 
-        for key,value in watchlist.items():
+        watchlist_data.append(ticker_data)
 
-            ticker_data ={
-                'symbol':key,
-                'price':value['regularMarketPrice'],
-            'change':value['regularMarketChange'],
-            'changep':value['regularMarketChangePercent'],
-            'name':value['shortName']
-            }
-
-            watchlist_data.append(ticker_data)
-
-        return render_template('dashboard.html',data=watchlist_data,id=session['user_id'],name=session['name'])
+    return render_template('dashboard.html',data=watchlist_data,id=session['user_id'],name=session['name'])
 
 
 
-    @app.route("/dashboard")
-    def dashboard():
-        """displays dashboard page when user registers and logs in"""
+@app.route("/dashboard")
+def dashboard():
+    """displays dashboard page when user registers and logs in"""
 
-        if "user_id" not in session:
-            flash("You must be logged in to view!")
-            return redirect("/")
-
-        else:
-            watchlist_data=[]
-        return render_template("dashboard.html",id=session['user_id'],data=watchlist_data)
-
-
-    @app.route("/logout")
-    def logout():
-        """Logs user out and redirects to homepage."""
-
-        session.pop("user_id")
-
+    if "user_id" not in session:
+        flash("You must be logged in to view!")
         return redirect("/")
-    '''=========================================================='''
-    '''====================== QUOTES AND WATCHLIST==============='''
+
+    else:
+        watchlist_data=[]
+    return render_template("dashboard.html",id=session['user_id'],data=watchlist_data)
 
 
-    @app.route('/quote/<symbol>')
-    def get_quote(symbol):
-        quote = yq.Ticker(symbol)
-        data = quote.quotes[symbol]
-        return jsonify(data)  # Convert to JSON response
+@app.route("/logout")
+def logout():
+    """Logs user out and redirects to homepage."""
+
+    session.pop("user_id")
+
+    return redirect("/")
+'''=========================================================='''
+'''====================== QUOTES AND WATCHLIST==============='''
+
+
+@app.route('/quote/<symbol>')
+def get_quote(symbol):
+    quote = yq.Ticker(symbol)
+    data = quote.quotes[symbol]
+    return jsonify(data)  # Convert to JSON response
 
 
 
-    @app.route('/add_ticker',methods=['POST'])
-    def add_ticker_to_db():
-        data = request.get_json()
-        existing_entry = Watchlist.query.filter_by(ticker_code=data['ticker_code'], user_id=data['user_id']).first()
-        if existing_entry:
-            return "This ticker code already exists for the user.", 400
+@app.route('/add_ticker',methods=['POST'])
+def add_ticker_to_db():
+    data = request.get_json()
+    existing_entry = Watchlist.query.filter_by(ticker_code=data['ticker_code'], user_id=data['user_id']).first()
+    if existing_entry:
+        return "This ticker code already exists for the user.", 400
 
-        else :  new_entry = Watchlist(
-                ticker_code=data['ticker_code'],
-                ticker_name=data['ticker_name'],
-                ticker_type=data['ticker_type'],
-                user_id=data['user_id']
-            )
-        db.session.add(new_entry)
+    else :  new_entry = Watchlist(
+            ticker_code=data['ticker_code'],
+            ticker_name=data['ticker_name'],
+            ticker_type=data['ticker_type'],
+            user_id=data['user_id']
+        )
+    db.session.add(new_entry)
+    db.session.commit()
+
+    get_quote(data['ticker_code'])
+
+    return 'Entries added to watchlist ,200'
+
+
+
+
+@app.route('/delete_ticker/<ticker>', methods=['POST'])
+def delete_ticker_from_db(ticker):
+
+    # Find the ticker by id
+    ticker_to_delete = Watchlist.query.filter_by(ticker_code=ticker).first()
+    print('ticker to delete is ',ticker_to_delete)
+
+    if ticker_to_delete:
+        # Delete the ticker from the database
+        db.session.delete(ticker_to_delete)
         db.session.commit()
 
-        get_quote(data['ticker_code'])
+        return jsonify({'message': 'Ticker deleted successfully'}), 200
+    else:
+        return jsonify({'error': 'Ticker not found'}), 404
 
-        return 'Entries added to watchlist ,200'
 
+@app.route('/watchlist_refresh',methods=["POST"])
+def refresh_watchlist():
+    # Retrieve data from request body
+    data = request.json.get('symbols', [])
 
+    tickers = yq.Ticker(data)
+    watchlist = tickers.price
+    watchlist_data=[]
 
+    for key,value in watchlist.items():
 
-    @app.route('/delete_ticker/<ticker>', methods=['POST'])
-    def delete_ticker_from_db(ticker):
+        ticker_data ={
+            'symbol':key,
+            'price':value['regularMarketPrice'],
+        'change':value['regularMarketChange'],
+        'changep':value['regularMarketChangePercent'],
+        'name':value['shortName']
+        }
 
-        # Find the ticker by id
-        ticker_to_delete = Watchlist.query.filter_by(ticker_code=ticker).first()
-        print('ticker to delete is ',ticker_to_delete)
+        watchlist_data.append(ticker_data)
 
-        if ticker_to_delete:
-            # Delete the ticker from the database
-            db.session.delete(ticker_to_delete)
-            db.session.commit()
+    return watchlist_data
 
-            return jsonify({'message': 'Ticker deleted successfully'}), 200
-        else:
-            return jsonify({'error': 'Ticker not found'}), 404
 
+'''===========================Market Data========================'''
 
-    @app.route('/watchlist_refresh',methods=["POST"])
-    def refresh_watchlist():
-        # Retrieve data from request body
-        data = request.json.get('symbols', [])
+@app.route('/market_summary')
+def get_market_summary():
+    data=yq.get_market_summary(country='united states')
 
-        tickers = yq.Ticker(data)
-        watchlist = tickers.price
-        watchlist_data=[]
+    return jsonify(data)
 
-        for key,value in watchlist.items():
+'''==================================ECONOMIC DATA======================='''
 
-            ticker_data ={
-                'symbol':key,
-                'price':value['regularMarketPrice'],
-            'change':value['regularMarketChange'],
-            'changep':value['regularMarketChangePercent'],
-            'name':value['shortName']
-            }
+@app.route('/economic_data')
+def show_economic_data():
 
-            watchlist_data.append(ticker_data)
+    economic_indicators={
+        'GDP:':'GDP',
+        'GNP:':'GNPCA',
+        'CPI:':'CPIAUCSL',
+        'Unemployment %:':'UNRATE',
+        '30-Yr Mortgage %:':'MORTGAGE30US',
+        'FED FUNDS %:':'FEDFUNDS',
+        'Industrial Production:':'INDPRO',
+        'Non Farm Payrolls:':'PAYEMS',
+        'Initial Jobless Claims:':'ICSA'
 
-        return watchlist_data
+        }
+    data = {key: get_eco_data(value) for key, value in economic_indicators.items()}
+    return data
 
 
 
+def get_eco_data(ticker):
 
-    '''===========================Market Data========================'''
+    response=fred.get_series(ticker)
+    return response[-1]
 
-    @app.route('/market_summary')
-    def get_market_summary():
-        data=yq.get_market_summary(country='united states')
+@app.route('/calendar')
+def get_eco_calendar():
+    url= f'https://api.stlouisfed.org/fred/releases/dates?realtime_start={today}&realtime_end={end}&limit=10&file_type=json&api_key={FRED_API_KEY}'
+    response = requests.get(url)
+    data = response.json()
+    links=[]
 
-        return jsonify(data)
+    for item in data['release_dates']:
+        id=item['release_id']
 
-    '''==================================ECONOMIC DATA======================='''
 
-    @app.route('/economic_data')
-    def show_economic_data():
+        links.append(get_link(id))
+    return jsonify(links)
 
-        economic_indicators={
-            'GDP:':'GDP',
-            'GNP:':'GNPCA',
-            'CPI:':'CPIAUCSL',
-            'Unemployment %:':'UNRATE',
-            '30-Yr Mortgage %:':'MORTGAGE30US',
-            'FED FUNDS %:':'FEDFUNDS',
-            'Industrial Production:':'INDPRO',
-            'Non Farm Payrolls:':'PAYEMS',
-            'Initial Jobless Claims:':'ICSA'
 
-            }
-        data = {key: get_eco_data(value) for key, value in economic_indicators.items()}
-        return data
+def get_link(id):
+    url=f'https://api.stlouisfed.org/fred/release?release_id={id}&api_key={FRED_API_KEY}&file_type=json'
+    response = requests.get(url)
+    data = response.json()
+    my_dict={}
 
 
+    for item in data['releases']:
+        name = item['name']
+        link = item.get('link', 'NA')
+    if name not in my_dict:
+        my_dict[name] = link
+    else:
+        my_dict[name]=link
+    return my_dict
 
-    def get_eco_data(ticker):
 
-        response=fred.get_series(ticker)
-        return response[-1]
 
-    @app.route('/calendar')
-    def get_eco_calendar():
-        url= f'https://api.stlouisfed.org/fred/releases/dates?realtime_start={today}&realtime_end={end}&limit=10&file_type=json&api_key={FRED_API_KEY}'
-        response = requests.get(url)
-        data = response.json()
-        links=[]
 
-        for item in data['release_dates']:
-            id=item['release_id']
 
+'''=================================US NEWS==============================='''
 
-            links.append(get_link(id))
-        return jsonify(links)
+@app.route('/us_news')
+def get_us_news():
+    us_news= yq.search('https://news.yahoo.com/us',news_count=5)
 
+    return us_news
 
-    def get_link(id):
-        url=f'https://api.stlouisfed.org/fred/release?release_id={id}&api_key={FRED_API_KEY}&file_type=json'
-        response = requests.get(url)
-        data = response.json()
-        my_dict={}
 
 
-        for item in data['releases']:
-            name = item['name']
-            link = item.get('link', 'NA')
-        if name not in my_dict:
-            my_dict[name] = link
-        else:
-            my_dict[name]=link
-        return my_dict
+'''=====================================DAILY HOROSCOPE============'''
 
+@app.route('/horoscope/<sign>',methods=['GET'])
+def get_horoscope(sign):
+    openai.api_key = OPENAI_API_KEY
 
 
+    completion = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": f"retrieve the  Daily Horoscope for  {sign}  ."},
+            {"role": "user", "content": f"display a 3 line summary of the horoscope."}
 
+        ]
+    )
+    msg = completion.choices[0].message.content
+    response=str(f'{sign} - {msg}')
+    return response
 
-    '''=================================US NEWS==============================='''
+'''==================JOKES!!======================================='''
+@app.route('/joke')
+def joker():
 
-    @app.route('/us_news')
-    def get_us_news():
-        us_news= yq.search('https://news.yahoo.com/us',news_count=5)
+    headers={"Accept":"application/json"}
+    url="https://icanhazdadjoke.com"
+    response = requests.get(url,headers=headers)
 
-        return us_news
 
+    joke=response.json()['joke']
 
+    return joke
 
-    '''=====================================DAILY HOROSCOPE============'''
 
-    @app.route('/horoscope/<sign>',methods=['GET'])
-    def get_horoscope(sign):
-        openai.api_key = OPENAI_API_KEY
 
+'''=================================CURRENT WEATHER============================'''
 
-        completion = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": f"retrieve the  Daily Horoscope for  {sign}  ."},
-                {"role": "user", "content": f"display a 3 line summary of the horoscope."}
+@app.route('/weather/<city>')
+def get_weather(city):
+    encoded_city=quote(city)
+    base_url =f"https://api.tomorrow.io/v4/weather/realtime?location={encoded_city}&units=imperial&apikey={WEATHER_API_KEY}"
 
-            ]
-        )
-        msg = completion.choices[0].message.content
-        response=str(f'{sign} - {msg}')
-        return response
 
-    '''==================JOKES!!======================================='''
-    @app.route('/joke')
-    def joker():
 
-        headers={"Accept":"application/json"}
-        url="https://icanhazdadjoke.com"
-        response = requests.get(url,headers=headers)
 
+    headers = {"accept": "application/json"}
 
-        joke=response.json()['joke']
+    response = requests.get(base_url, headers=headers)
 
-        return joke
+    weather=response.json()
 
+    # degree_symbol = '\u00B0'
 
 
-    '''=================================CURRENT WEATHER============================'''
+    return weather
 
-    @app.route('/weather/<city>')
-    def get_weather(city):
-        encoded_city=quote(city)
-        base_url =f"https://api.tomorrow.io/v4/weather/realtime?location={encoded_city}&units=imperial&apikey={WEATHER_API_KEY}"
 
-
-
-
-        headers = {"accept": "application/json"}
-
-        response = requests.get(base_url, headers=headers)
-
-        weather=response.json()
-
-        # degree_symbol = '\u00B0'
-
-
-        return weather
-    return app
-if __name__ == '__main__':
-    app = create_app('econ_dashboard')
-    connect_db(app)
-    app.run(debug=True)
