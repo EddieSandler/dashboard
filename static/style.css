@@ -1,61 +1,119 @@
- body {
-  margin: 0;
-  font-family: Arial, sans-serif;
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f8f9fa;
+  color: #f8f9fa;
+  /* background-color: #333;
+  color: #333; */
 }
 
 .dashboard {
-  display: grid;
-  grid-template-areas:
-      'header header header'
-      'sidebar content content';
-  grid-template-columns: 1fr 3fr;
-  grid-template-rows: auto;
-  height: 100vh;
+  max-width: 1200px;
+  margin: auto;
+  padding: 20px;
 }
 
-.header {
-  grid-area: header;
-  background-color: #333;
+.header h1 {
+  background-color: #007bff;
   color: white;
   padding: 10px;
+  border-radius: 5px;
+  text-align: center;
 }
 
 .sidebar {
-  grid-area: sidebar;
-  background-color: #f4f4f4;
-  padding: 10px;
-}
+  background-color: #ffffff;
+  padding: 1px;
+  margin-bottom: 20px;
+  border-radius: 4px;
 
-.sidebar img {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 25%; /*Image takes full width of the sidebar*/
-  height: auto; /* Maintain aspect ratio */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .main-content {
-  grid-area: content;
-  padding: 10px;
-}
-
-.section {
+  background-color: #ffffff;
+  padding: 15px;
   margin-bottom: 20px;
-  padding: 20px;
-  background-color: #ddd;
   border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.table {
+  width: 100%;
+  margin-bottom: 1rem;
+  color: #212529;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem;
+  vertical-align: top;
+  border-top: 1px solid #dee2e6;
+}
+
+.table thead th {
+  vertical-align: bottom;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.table tbody + tbody {
+  border: 2px solid #dee2e6;
 }
 
 
-img {
-  width:50%;
-  height: 100%;
+
+
+ul {
+  padding-left: 20px;
 }
 
-td.quote-input {
-  min-height: 20px;  /* Set the minimum height as per your requirement */
-  height: 20px;      /* This ensures the height is at least 50px */
-  vertical-align: top; /* Keeps content aligned to the top, if any */
-  border: 1px solid #ccc; /* Optional, for visual aid to see the cells */
+ul li {
+  margin-bottom: 5px;
 }
 
+ul li a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+ul li a:hover {
+  text-decoration: underline;
+}
+
+
+
+
+/* .min-height-div {
+  min-height: 200px; /* Adjust the value as needed */
+
+
+.form-group {
+  max-width: 300px; /* Adjust the width of the dropdown */
+  margin: auto; /* Center the form in the middle of the page */
+}
+
+
+.positive {
+  color:green
+}
+
+.negative {
+  color:red
+}
+
+
+#ecoStats tr {
+  /* Method 1: Increase Padding */
+  padding-top: 20px; /* adjust as needed */
+  padding-bottom: 20px; /* adjust as needed */
+}
+
+#ecoStats  td, #ecoStats th {
+
+  min-height: 50px; /* adjust as needed */
+  line-height: 1.6; /* adjust as needed */
+}
+
+#eco-releases td, #eco-releases th{
+  line-height: 1.8;
+  padding:2px;
+}
