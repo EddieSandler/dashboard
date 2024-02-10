@@ -6,7 +6,7 @@ from openai import OpenAI
 from urllib.parse import quote
 from flask_cors import CORS
 from flask import Flask, request, render_template, jsonify,redirect,flash, session
-from secret import OPENAI_API_KEY,FRED_API_KEY,WEATHER_API_KEY
+# from secret import OPENAI_API_KEY,FRED_API_KEY,WEATHER_API_KEY
 from models import db, User,Watchlist # Import the models
 from forms import RegisterForm,LoginForm # Import the form
 import datetime
