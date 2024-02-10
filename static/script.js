@@ -128,13 +128,13 @@ function displayQuote(response, ticker) {
   symbol = document.getElementById('nameField').textContent = response.data.shortName;
 
   if (response.data.regularMarketChange > 0) {
-    price.className = 'positive';
-    changeD.className = 'positive';
-    changeP.className = 'positive';
+    price.classList.add('positive');
+    changeD.classList.add('positive');
+    changeP.classList.add('positive');
   } else {
-    price.className = 'negative';
-    changeD.className = 'negative';
-    changeP.className = 'negative';
+    price.classList.add('negative');
+    changeD.classList.add('negative');
+    changeP.className.add('negative');
 
   }
   const watchlistButton = document.getElementById('add');
