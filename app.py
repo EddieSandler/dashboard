@@ -17,9 +17,6 @@ import datetime
 
 
 
-today = datetime.date.today()
-end = today + datetime.timedelta(days=5)
-
 
 
 fred = Fred(api_key=FRED_API_KEY)
@@ -39,6 +36,9 @@ db.init_app(app)
 app.app_context().push()
 db.create_all()
 
+
+today = datetime.date.today()
+end = today + datetime.timedelta(days=5)
 
 '''===========LOGIN and AUTHENTICATION=============='''
 
