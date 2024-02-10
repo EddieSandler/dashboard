@@ -9,12 +9,9 @@ import openai
 from urllib.parse import quote
 from flask_cors import CORS
 from flask import Flask, request, render_template, jsonify,redirect,flash, session
-
 from models import db, User,Watchlist # Import the models
 from forms import RegisterForm,LoginForm # Import the form
 import datetime
-
-
 
 
 load_dotenv()  # This line brings all environment variables from .env into os.environ
