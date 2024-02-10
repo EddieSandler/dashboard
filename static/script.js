@@ -24,7 +24,6 @@ if (watchlistInnerHTML) {
 }
 if (userWatchlist.size > 0) {
   for (let item of userWatchlist) {
-    console.log(item.symbol, item.price.toFixed(2), item.change.toFixed(2), item.changep.toFixed(2), item.name);
     let table = document.getElementById('watchlist-table');
 
     let row = document.createElement('tr');
@@ -64,7 +63,7 @@ if (userWatchlist.size > 0) {
     let removeButton = document.createElement('button');
     removeButton.textContent = 'Remove';
 
-    removeButton.className = 'remove-button';
+    removeButton.className = 'btn btn-danger';
     row.appendChild(removeButton);
 
     removeButton.addEventListener('click', () => removeTickerFromDOM(row, item.symbol));
@@ -229,7 +228,9 @@ function displayQuoteInWatchlist(ticker, data) {
   let removeButton = document.createElement('button');
   removeButton.textContent = 'Remove';
 
-  removeButton.className = 'remove-button';
+  removeButton.classList.add('btn','btn-danger');
+
+
   row.appendChild(removeButton);
 
   removeButton.addEventListener('click', function () {
@@ -266,7 +267,7 @@ function removeTickerFromDOM(row, ticker) {
 
 async function removeTickerFromDb(ticker) {
 
-  console.log('executing remove Ticker for ', ticker);
+
 
   let url = `http://127.0.0.1:5000/delete_ticker/${ticker}`;
 
@@ -349,7 +350,7 @@ document.getElementById('zodiac-signs').addEventListener('change', function () {
     .then(function (response) {
 
       let reading = document.getElementById('todays-horoscope');
-      reading.innerHTML = `${selectedSign} - ${response.data}`;
+      reading.innerHTML = ` ${response.data}`;
     })
     .catch(function (error) {
       console.error(error); // Handle errors
@@ -435,8 +436,9 @@ async function get_marketSummary() {
 
 
 function updateMarketSummary() {
-  clearMarketDataSummary()
+
   get_marketSummary(); // Initial call to the function
+  clearMarketDataSummary()
   setInterval(get_marketSummary, 60000); // Set interval for 60 seconds (10000 milliseconds)
 }
 
@@ -444,7 +446,7 @@ document.addEventListener('DOMContentLoaded', updateMarketSummary);
 
 async function get_news(){
   clearNews()
-  console.log('clearing news')
+
   let headlines= document.getElementById('news-table');
   url = 'http://127.0.0.1:5000/us_news';
   await axios.get(url)
@@ -472,11 +474,12 @@ async function get_news(){
 
 
 function updateNews() {
-  console.log('executing update news')
+
+  get_news()
   clearNews()
 
-  get_news(); // Initial call to the function
-  setInterval(get_news,120000); // Set interval for 120000 seconds (10000 milliseconds)
+  ; // Initial call to the function
+  setInterval(get_news,180000); // Set interval for 180000 seconds (10000 milliseconds)
 }
 
 function clearNews(){
@@ -553,7 +556,7 @@ function display_econ_calendar(data) {
   data.data.map((el) => {
     for (const [key, value] of Object.entries(el)) {
 
-      
+
       const row = document.createElement('tr');
       const keyCell = document.createElement('td');
       keyCell.textContent = key;
