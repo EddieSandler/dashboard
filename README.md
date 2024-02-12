@@ -4,7 +4,7 @@
 
 ## Summary
 
-This project is a dashboard intended to provide a snapshot of US Markets. It is my take on a typical Yahoo Finance screen, providing quotes for equities, currencies (including crypto), fixed income, and commodities.
+This project is a dashboard intended to provide a snapshot of US Markets. It is my take on a typical Yahoo Finance screen, providing quotes for equities, currencies (including crypto), fixed income, and commodities. THe user has the ability to build and edit  ticker watchlists, which are stored and updated in a Postgres database.
 
 ## Technologies Used
 
