@@ -9,12 +9,9 @@ import openai
 from urllib.parse import quote
 from flask_cors import CORS
 from flask import Flask, request, render_template, jsonify,redirect,flash, session
-# from secret import OPENAI_API_KEY,FRED_API_KEY,WEATHER_API_KEY
 from models import db, User,Watchlist # Import the models
 from forms import RegisterForm,LoginForm # Import the form
 import datetime
-
-
 
 
 load_dotenv()  # This line brings all environment variables from .env into os.environ
@@ -24,18 +21,6 @@ FRED_API_KEY=os.environ['FRED_API_KEY']
 WEATHER_API_KEY=os.environ['WEATHER_API_KEY']
 OPENAI_API_KEY=os.environ['OPENAI_API_KEY']
 
-
-
-
-
-
-
-
-
-
-
-# fred = Fred(api_key=FRED_API_KEY)
-# client = OpenAI()
 client = openai.Client(api_key=OPENAI_API_KEY)
 
 
