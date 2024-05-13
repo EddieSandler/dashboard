@@ -1,0 +1,24 @@
+{
+  "dependencies": {
+    "axios": "^1.6.7",
+    "bootstrap": "^5.3.2"
+  },
+  "name": "capstone-project-one-88b9a671031c4c70bd939d2925ec0d96",
+  "description": "We have broken down the Capstone Project into easy-to-follow steps. Each step of the capstone contains a link with instructions for that step. Here’s a quick overview of what you’ll do for each step of your capstone project:",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "axios-mock-adapter": "^1.22.0",
+    "jasmine": "^5.1.0"
+  },
+  "jest": {
+    "moduleNameMapper": {
+      "^axios$": "axios/dist/axios.js"
+    }
+  }
+}

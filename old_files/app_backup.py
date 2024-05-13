@@ -101,9 +101,8 @@ def login():
     return render_template("login.html", form=form)
 
 
-@app.route('/update_watchlist/<data>',methods=['POST'])
+@app.route('/update_watchlist/',methods=['POST'])
 def load_watchlist(data):
-
 
     tickers = yq.Ticker(data)
     watchlist= tickers.price
@@ -121,13 +120,13 @@ def load_watchlist(data):
 
         watchlist_data.append(ticker_data)
 
-    return render_template('dashboard.html',data=watchlist_data,id=session['user_id'],name=session['name'])
+    return render_template('test.html',data=watchlist_data,id=session['user_id'],name=session['name'])
 
 
 
 @app.route("/dashboard")
 def dashboard():
-    """displays dashboard page when user registers and logs in"""
+    """Example hidden page for logged-in users only."""
 
     if "user_id" not in session:
         flash("You must be logged in to view!")
@@ -135,7 +134,7 @@ def dashboard():
 
     else:
         watchlist_data=[]
-    return render_template("dashboard.html",id=session['user_id'],data=watchlist_data)
+    return render_template("test.html",id=session['user_id'],data=watchlist_data)
 
 
 @app.route("/logout")
@@ -227,7 +226,7 @@ def refresh_watchlist():
 def get_market_summary():
     data=yq.get_market_summary(country='united states')
 
-    return jsonify(data)
+    return data
 
 '''==================================ECONOMIC DATA======================='''
 
@@ -268,7 +267,7 @@ def get_eco_calendar():
 
 
         links.append(get_link(id))
-    return jsonify(links)
+    return links
 
 
 def get_link(id):
@@ -304,7 +303,7 @@ def get_us_news():
 '''=====================================DAILY HOROSCOPE============'''
 
 @app.route('/horoscope/<sign>',methods=['GET'])
-def get_horoscope(sign):
+def test_gpt(sign):
     openai.api_key = OPENAI_API_KEY
 
 
@@ -317,12 +316,12 @@ def get_horoscope(sign):
         ]
     )
     msg = completion.choices[0].message.content
-    response=str(f'{sign} - {msg}')
+    response=str(msg)
     return response
 
 '''==================JOKES!!======================================='''
 @app.route('/joke')
-def joker():
+def joke_of_the_day():
 
     headers={"Accept":"application/json"}
     url="https://icanhazdadjoke.com"
