@@ -13,6 +13,7 @@ from forms import RegisterForm,LoginForm # Import the form
 import datetime
 
 
+
 load_dotenv()  # This line brings all environment variables from .env into os.environ
 
 fred =Fred(api_key=os.environ['FRED_API_KEY'])
@@ -302,23 +303,29 @@ def get_us_news():
 
 
 '''=====================================DAILY HOROSCOPE============'''
-
-@app.route('/horoscope/<sign>',methods=['GET'])
+@app.route('/horoscope/<sign>')
 def get_horoscope(sign):
-    openai.api_key = OPENAI_API_KEY
+    sign = sign.lower()
+    url = f"http://sandipbgt.com/theastrologer/api/horoscope/{sign}/today"
+    print(f"Request URL: {url}")  # Debugging statement
+
+    response = requests.get(url)
+
+    # Check if the request was successful
+    if response.status_code != 200:
+        app.logger.error(f"Request to {url} failed with status code {response.status_code}")
+        return jsonify({"error": f"Request failed with status code {response.status_code}"}), response.status_code
+
+    try:
+        msg = response.json()
+    except requests.exceptions.JSONDecodeError as e:
+        app.logger.error(f"JSON decode error: {e.msg} at position {e.pos}")
+        app.logger.error(f"Response text: {response.text}")
+        return jsonify({"error": "Invalid JSON response"}), 500
+
+    return (msg['horoscope'])
 
 
-    completion = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": f"retrieve the  Daily Horoscope for  {sign}  ."},
-            {"role": "user", "content": f"display a 3 line summary of the horoscope."}
-
-        ]
-    )
-    msg = completion.choices[0].message.content
-    response=str(f'{sign} - {msg}')
-    return response
 
 '''==================JOKES!!======================================='''
 @app.route('/joke')

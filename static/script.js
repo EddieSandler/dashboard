@@ -343,7 +343,7 @@ document.addEventListener('DOMContentLoaded', startUpdatingWatchlist);
 
 
 document.getElementById('zodiac-signs').addEventListener('change', function () {
-  var selectedSign = this.value;
+  var selectedSign = this.value.toLowerCase();
   console.log(selectedSign);
   let url = `http://127.0.0.1:5000/horoscope/${selectedSign}`;
   axios.get(url)
