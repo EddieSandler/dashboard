@@ -305,7 +305,7 @@ def get_us_news():
 '''=====================================DAILY HOROSCOPE============'''
 @app.route('/horoscope/<sign>')
 def get_horoscope(sign):
-    sign = sign.lower()
+
     url = f"http://sandipbgt.com/theastrologer/api/horoscope/{sign}/today"
     print(f"Request URL: {url}")  # Debugging statement
 
